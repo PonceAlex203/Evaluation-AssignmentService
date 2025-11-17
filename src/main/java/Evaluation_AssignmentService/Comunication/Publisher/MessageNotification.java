@@ -1,6 +1,6 @@
 package Evaluation_AssignmentService.Comunication.Publisher;
 
-import Evaluation_AssignmentService.ProcessEntity.BaseProcess;
+import Evaluation_AssignmentService.ProcessEvaluation.ProcessEntity.BaseProcess;
 
 public final class MessageNotification {
     public static String ProcessUpdated(BaseProcess pUpdatedProcess){

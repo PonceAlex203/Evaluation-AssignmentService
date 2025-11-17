@@ -1,14 +1,12 @@
 package Evaluation_AssignmentService.Controller;
 
-import Evaluation_AssignmentService.Dto.DraftDTO;
-import Evaluation_AssignmentService.Dto.FormatADTO;
-import Evaluation_AssignmentService.Dto.PresentationDTO;
-import Evaluation_AssignmentService.ProcessController.ProcessController;
-import Evaluation_AssignmentService.ProcessEntity.Draft;
-import Evaluation_AssignmentService.ProcessEntity.FormatA;
-import Evaluation_AssignmentService.ProcessEntity.Presentation;
-import Evaluation_AssignmentService.ProcessService.PresentationService;
-import Evaluation_AssignmentService.ProcessService.ProcessFacade;
+import Evaluation_AssignmentService.ProcessEvaluation.Dto.DraftDTO;
+import Evaluation_AssignmentService.ProcessEvaluation.Dto.FormatADTO;
+import Evaluation_AssignmentService.ProcessEvaluation.ProcessController.ProcessController;
+import Evaluation_AssignmentService.ProcessEvaluation.ProcessEntity.Draft;
+import Evaluation_AssignmentService.ProcessEvaluation.ProcessEntity.FormatA;
+import Evaluation_AssignmentService.ProcessEvaluation.ProcessEntity.Presentation;
+import Evaluation_AssignmentService.ProcessEvaluation.ProcessService.ProcessFacade;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -29,9 +27,6 @@ import static org.mockito.Mockito.when;
 public class ProcessControllerTest {
     @Mock
     private ProcessFacade processFacade;
-
-    @Mock
-    private PresentationService presentationService;
 
     @InjectMocks
     private ProcessController controller;
@@ -113,45 +108,5 @@ public class ProcessControllerTest {
 
         assertEquals(HttpStatus.OK, response.getStatusCode());
         assertEquals(formatA, response.getBody());
-    }
-
-//Presentation
-    @Test
-    void testSavePresentation() {
-        PresentationDTO dto = new PresentationDTO();
-        dto.setIdDegreeWork(1L);
-        dto.setIdjurys(List.of(10L, 20L));
-
-        when(presentationService.save(any(Presentation.class))).thenReturn(presentation);
-
-        ResponseEntity<Presentation> response = controller.savePresentation(dto);
-
-        assertEquals(HttpStatus.OK, response.getStatusCode());
-        assertEquals(presentation, response.getBody());
-    }
-    @Test
-    void testGetPresentationById() {
-        when(presentationService.findById(1L)).thenReturn(presentation);
-
-        ResponseEntity<Presentation> response = controller.getPresentationById(1L);
-
-        assertEquals(HttpStatus.OK, response.getStatusCode());
-        assertEquals(presentation, response.getBody());
-    }
-
-
-
-    @Test
-    void testReUploadPresentation() {
-        PresentationDTO dto = new PresentationDTO();
-        dto.setIdDegreeWork(1L);
-        dto.setIdjurys(List.of(10L, 20L));
-
-        when(presentationService.update(eq(1L), any(Presentation.class))).thenReturn(presentation);
-
-        ResponseEntity<Presentation> response = controller.reUploadPresentation(1L, dto);
-
-        assertEquals(HttpStatus.OK, response.getStatusCode());
-        assertEquals(presentation, response.getBody());
     }
 }

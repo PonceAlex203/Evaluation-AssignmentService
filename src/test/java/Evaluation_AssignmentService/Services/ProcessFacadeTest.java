@@ -1,15 +1,15 @@
 package Evaluation_AssignmentService.Services;
 
-import Evaluation_AssignmentService.Dto.DraftDTO;
-import Evaluation_AssignmentService.Dto.EvaluateProcessDTO;
-import Evaluation_AssignmentService.Dto.FormatADTO;
-import Evaluation_AssignmentService.Enum.EnumProcessStatus;
-import Evaluation_AssignmentService.ProcessEntity.Draft;
-import Evaluation_AssignmentService.ProcessEntity.FormatA;
-import Evaluation_AssignmentService.ProcessEntity.ProcessFactory;
-import Evaluation_AssignmentService.ProcessService.DraftService;
-import Evaluation_AssignmentService.ProcessService.FormatAService;
-import Evaluation_AssignmentService.ProcessService.ProcessFacade;
+import Evaluation_AssignmentService.ProcessEvaluation.Dto.DraftDTO;
+import Evaluation_AssignmentService.ProcessEvaluation.Dto.EvaluateProcessDTO;
+import Evaluation_AssignmentService.ProcessEvaluation.Dto.FormatADTO;
+import Evaluation_AssignmentService.ProcessEvaluation.Enum.EnumProcessStatus;
+import Evaluation_AssignmentService.ProcessEvaluation.ProcessEntity.Draft;
+import Evaluation_AssignmentService.ProcessEvaluation.ProcessEntity.FormatA;
+import Evaluation_AssignmentService.ProcessEvaluation.ProcessEntity.ProcessFactory;
+import Evaluation_AssignmentService.ProcessEvaluation.ProcessService.DraftService;
+import Evaluation_AssignmentService.ProcessEvaluation.ProcessService.FormatAService;
+import Evaluation_AssignmentService.ProcessEvaluation.ProcessService.ProcessFacade;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;

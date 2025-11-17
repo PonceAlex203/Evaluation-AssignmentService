@@ -1,11 +1,11 @@
 package Evaluation_AssignmentService.Services;
 
-import Evaluation_AssignmentService.Enum.EnumProcessStatus;
-import Evaluation_AssignmentService.ProcessEntity.Draft;
-import Evaluation_AssignmentService.ProcessEntity.ProcessFactory;
-import Evaluation_AssignmentService.ProcessRepository.DraftRepository;
-import Evaluation_AssignmentService.ProcessService.DraftService;
-import Evaluation_AssignmentService.ProcessService.FormatAService;
+import Evaluation_AssignmentService.ProcessEvaluation.Enum.EnumProcessStatus;
+import Evaluation_AssignmentService.ProcessEvaluation.ProcessEntity.Draft;
+import Evaluation_AssignmentService.ProcessEvaluation.ProcessEntity.ProcessFactory;
+import Evaluation_AssignmentService.ProcessEvaluation.ProcessRepository.DraftRepository;
+import Evaluation_AssignmentService.ProcessEvaluation.ProcessService.DraftService;
+import Evaluation_AssignmentService.ProcessEvaluation.ProcessService.FormatAService;
 import Evaluation_AssignmentService.SecurityComponent.ProcessException;
 import jakarta.persistence.EntityManager;
 import org.junit.jupiter.api.BeforeEach;

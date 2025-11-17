@@ -1,7 +1,7 @@
 package Evaluation_AssignmentService.Comunication.Listener;
 
 import Evaluation_AssignmentService.Comunication.Info.EvaluationEvent;
-import Evaluation_AssignmentService.ProcessService.DegreeWorkService;
+import Evaluation_AssignmentService.ProcessEvaluation.ProcessService.DegreeWorkService;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.stereotype.Component;
 

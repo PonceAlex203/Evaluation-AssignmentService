@@ -1,9 +1,9 @@
 package Evaluation_AssignmentService.Services;
 
-import Evaluation_AssignmentService.Enum.EnumProcessStatus;
-import Evaluation_AssignmentService.ProcessEntity.FormatA;
-import Evaluation_AssignmentService.ProcessRepository.FormatARepository;
-import Evaluation_AssignmentService.ProcessService.FormatAService;
+import Evaluation_AssignmentService.ProcessEvaluation.Enum.EnumProcessStatus;
+import Evaluation_AssignmentService.ProcessEvaluation.ProcessEntity.FormatA;
+import Evaluation_AssignmentService.ProcessEvaluation.ProcessRepository.FormatARepository;
+import Evaluation_AssignmentService.ProcessEvaluation.ProcessService.FormatAService;
 import Evaluation_AssignmentService.SecurityComponent.ProcessException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;

@@ -1,13 +1,13 @@
 package Evaluation_AssignmentService.Patterns;
 
 
-import Evaluation_AssignmentService.Builders.DraftBuilder;
-import Evaluation_AssignmentService.Builders.FormatABuilder;
-import Evaluation_AssignmentService.Dto.DraftDTO;
-import Evaluation_AssignmentService.Dto.FormatADTO;
-import Evaluation_AssignmentService.Enum.EnumProcessStatus;
-import Evaluation_AssignmentService.ProcessEntity.Draft;
-import Evaluation_AssignmentService.ProcessEntity.FormatA;
+import Evaluation_AssignmentService.ProcessEvaluation.Builders.DraftBuilder;
+import Evaluation_AssignmentService.ProcessEvaluation.Builders.FormatABuilder;
+import Evaluation_AssignmentService.ProcessEvaluation.Dto.DraftDTO;
+import Evaluation_AssignmentService.ProcessEvaluation.Dto.FormatADTO;
+import Evaluation_AssignmentService.ProcessEvaluation.Enum.EnumProcessStatus;
+import Evaluation_AssignmentService.ProcessEvaluation.ProcessEntity.Draft;
+import Evaluation_AssignmentService.ProcessEvaluation.ProcessEntity.FormatA;
 import Evaluation_AssignmentService.SecurityComponent.EnumTypeExceptions;
 import Evaluation_AssignmentService.SecurityComponent.ProcessException;
 import org.junit.jupiter.api.Test;
