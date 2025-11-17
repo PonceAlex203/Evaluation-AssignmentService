@@ -1,10 +1,6 @@
 package Evaluation_AssignmentService.ProcessController;
 
-import Evaluation_AssignmentService.Comunication.Info.EnumDegreeWorkStateType;
-import Evaluation_AssignmentService.Comunication.Info.EvaluationEvent;
-import Evaluation_AssignmentService.Comunication.Publisher.MessageNotification;
 import Evaluation_AssignmentService.Dto.*;
-import Evaluation_AssignmentService.Comunication.Publisher.Publisher;
 import Evaluation_AssignmentService.Enum.EnumProcessStatus;
 import Evaluation_AssignmentService.ProcessEntity.Draft;
 import Evaluation_AssignmentService.ProcessEntity.FormatA;
@@ -21,8 +17,7 @@ import java.util.List;
 public class ProcessController {
 
     private final ProcessFacade processFacade;
-    @Autowired
-    private Publisher publisher;
+
 
     @Autowired
     public ProcessController(ProcessFacade processFacade) {
@@ -40,19 +35,16 @@ public class ProcessController {
     @PostMapping("/draft")
     public ResponseEntity<Draft> saveDraft(@RequestBody DraftDTO pDraft) {
         Draft draft = processFacade.saveDraft(pDraft);
-        publisher.sendToModifierQueue(new EvaluationEvent(draft.getDegreeworkId(), EnumDegreeWorkStateType.DRAFT_SUBMITTED));
         return ResponseEntity.ok(draft);
     }
     @PutMapping("/draft/update")
     public ResponseEntity<Draft> reUploadDraft(@RequestBody DraftDTO pUpdatedDraft) {
         Draft vUploadDraft = processFacade.saveDraft(pUpdatedDraft);
-        publisher.sendToNotificationQueue(MessageNotification.ProcessUpdated(vUploadDraft));
         return ResponseEntity.ok(vUploadDraft);
     }
     @PutMapping("/draft/evaluate/{id}")
     public ResponseEntity<Draft> evaluateDraft(@PathVariable Long id, @RequestBody EvaluateProcessDTO request) {
         Draft vEvaluatedDraft = processFacade.evaluateDraft(id, request);
-        publisher.sendToNotificationQueue(MessageNotification.ProcessEvaluated(vEvaluatedDraft));
         return ResponseEntity.ok(vEvaluatedDraft);
     }
     @GetMapping("/draft/pending")
@@ -72,19 +64,16 @@ public class ProcessController {
     @PostMapping("/formatA")
     public ResponseEntity<FormatA> saveFormatA(@RequestBody FormatADTO pFormatA) {
         FormatA vNewFormatA = processFacade.saveFormatA(pFormatA);
-        publisher.sendToModifierQueue(new EvaluationEvent(pFormatA.getDegreeWorkId(), EnumDegreeWorkStateType.FORMAT_A_SUBMITTED));
         return ResponseEntity.ok(vNewFormatA);
     }
     @PutMapping("/formatA/update")
     public ResponseEntity<FormatA> reUploadFormatA(@RequestBody FormatADTO pUpdatedFormatA) {
         FormatA vUploadFormatA = processFacade.reUploadFormatA(pUpdatedFormatA);
-        publisher.sendToNotificationQueue(MessageNotification.ProcessUpdated(vUploadFormatA));
         return ResponseEntity.ok(vUploadFormatA);
     }
     @PutMapping("/formatA/evaluate/{id}")
     public ResponseEntity<FormatA> evaluateFormatA(@PathVariable Long id, @RequestBody EvaluateProcessDTO request) {
         FormatA vEvaluatedFormatA = processFacade.evaluateFormatA(id, request);
-        publisher.sendToNotificationQueue(MessageNotification.ProcessEvaluated(vEvaluatedFormatA));
         return ResponseEntity.ok(vEvaluatedFormatA);
     }
     @GetMapping("/formatA/pending")

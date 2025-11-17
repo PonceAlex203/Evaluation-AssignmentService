@@ -1,5 +1,8 @@
 package Evaluation_AssignmentService.ProcessService;
 
+import Evaluation_AssignmentService.Comunication.Info.EnumDegreeWorkStateType;
+import Evaluation_AssignmentService.Comunication.Info.EvaluationEvent;
+import Evaluation_AssignmentService.Comunication.Publisher.Publisher;
 import Evaluation_AssignmentService.Dto.FormatADTO;
 import Evaluation_AssignmentService.Enum.EnumProcessStatus;
 import Evaluation_AssignmentService.ProcessEntity.FormatA;
@@ -19,8 +22,8 @@ public class FormatAService extends ProcessService<FormatA, FormatADTO> {
     private final byte maxAttempts = 3;
 
     @Autowired
-    public FormatAService(FormatARepository repository, ProcessFactory processFactory) {
-        super(repository, processFactory);
+    public FormatAService(FormatARepository repository, ProcessFactory processFactory, Publisher pPublisher) {
+        super(repository, processFactory, pPublisher);
         this.formatARepository = repository;
     }
 
@@ -59,6 +62,19 @@ public class FormatAService extends ProcessService<FormatA, FormatADTO> {
     protected void SynchronizeData(FormatA pCurrentProcess, FormatA pUpdateProcess){
         super.SynchronizeData(pCurrentProcess, pUpdateProcess);
         pCurrentProcess.setCompanyLetterPath(pCurrentProcess.getCompanyLetterPath());
+    }
+
+    @Override
+    protected void sendStatusChangeEvent(FormatA pProcess) {
+        EnumDegreeWorkStateType vNewStatus;
+        switch (pProcess.getStatus()){
+            case PENDING -> vNewStatus = EnumDegreeWorkStateType.FORMAT_A_SUBMITTED;
+            case APPROVED -> vNewStatus = EnumDegreeWorkStateType.FORMAT_A_APPROVED;
+            case REJECTED -> vNewStatus = EnumDegreeWorkStateType.FORMAT_A_REJECTED;
+            case FAILED -> vNewStatus = EnumDegreeWorkStateType.FORMAT_A_FAILED;
+            default -> vNewStatus = EnumDegreeWorkStateType.FORMAT_A;//Nunca se cumple
+        }
+        publisher.sendToModifierQueue(new EvaluationEvent(pProcess.getDegreeworkId(), vNewStatus));
     }
 }
 

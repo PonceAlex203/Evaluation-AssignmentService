@@ -1,7 +1,7 @@
 package Evaluation_AssignmentService.Comunication.Publisher;
 
 import Evaluation_AssignmentService.Comunication.Info.EvaluationEvent;
-import Evaluation_AssignmentService.ProcessEntity.BaseProcess;
+import Evaluation_AssignmentService.Comunication.Info.NotificationEvent;
 import org.springframework.amqp.rabbit.annotation.EnableRabbit;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Value;
@@ -26,7 +26,7 @@ public class Publisher {
         rabbitTemplate.convertAndSend(modifierQueue, pEvent);
     }
 
-    public void sendToNotificationQueue(String pMessage) {
+    public void sendToNotificationQueue(NotificationEvent pMessage) {
         rabbitTemplate.convertAndSend(notificationQueue, pMessage);
     }
 

@@ -1,5 +1,8 @@
 package Evaluation_AssignmentService.ProcessService;
 
+import Evaluation_AssignmentService.Comunication.Info.EnumDegreeWorkStateType;
+import Evaluation_AssignmentService.Comunication.Info.EvaluationEvent;
+import Evaluation_AssignmentService.Comunication.Publisher.Publisher;
 import Evaluation_AssignmentService.Dto.DraftDTO;
 import Evaluation_AssignmentService.Enum.EnumProcessStatus;
 import Evaluation_AssignmentService.ProcessEntity.Draft;
@@ -21,8 +24,8 @@ public class DraftService extends ProcessService<Draft, DraftDTO>{
     private final DraftRepository draftRepository;
     private final FormatAService formatAService;
 
-    public DraftService(DraftRepository repository, ProcessFactory processFactory, FormatAService formatAService) {
-        super(repository, processFactory);
+    public DraftService(DraftRepository repository, ProcessFactory processFactory, FormatAService formatAService, Publisher pPublisher) {
+        super(repository, processFactory, pPublisher);
         this.draftRepository = repository;
         this.formatAService = formatAService;
     }
@@ -36,6 +39,7 @@ public class DraftService extends ProcessService<Draft, DraftDTO>{
         if(pCurrentProcess.getDaysPassed() >= 60)
             throw new ProcessException(EnumTypeExceptions.EXPIRED_TIME);
     }
+
     /**
      * Updates internal Draft data such as days passed.
      *
@@ -59,6 +63,17 @@ public class DraftService extends ProcessService<Draft, DraftDTO>{
             throw new ProcessException(EnumTypeExceptions.PREVIOUS_PROCESS_NOT_SUMBITTED);
         if(!formatA.getStatus().equals(EnumProcessStatus.APPROVED))
             throw new ProcessException(EnumTypeExceptions.PREVIOUS_PROCESS_NOT_APPROVED);
+    }
+    @Override
+    protected void sendStatusChangeEvent(Draft pProcess) {
+        EnumDegreeWorkStateType vNewStatus;
+        switch (pProcess.getStatus()){
+            case PENDING -> vNewStatus = EnumDegreeWorkStateType.DRAFT_SUBMITTED;
+            case APPROVED -> vNewStatus = EnumDegreeWorkStateType.DRAFT_APPROVED;
+            case REJECTED -> vNewStatus = EnumDegreeWorkStateType.DRAFT_REJECTED;
+            default -> vNewStatus = EnumDegreeWorkStateType.DRAFT;//Nunca se cumple
+        }
+        publisher.sendToModifierQueue(new EvaluationEvent(pProcess.getDegreeworkId(), vNewStatus));
     }
 }
 

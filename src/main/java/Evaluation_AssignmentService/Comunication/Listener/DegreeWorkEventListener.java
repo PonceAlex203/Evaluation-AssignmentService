@@ -16,8 +16,12 @@ public class DegreeWorkEventListener {
 
     @RabbitListener(queues = "${queue.creation}")
     public void handlerDegreeWorkEvent(EvaluationEvent event) {
-        System.out.println("===EVENTO RECIBIDO===");
-        service.saveDegreeWorkId(event.getDegreeWorkId());
-        System.out.println("GUARDADO ID: " +event.getDegreeWorkId() );
+        try{
+            System.out.println("===EVENTO RECIBIDO===");
+            service.saveDegreeWorkId(event.getDegreeWorkId());
+            System.out.println("GUARDADO ID: " +event.getDegreeWorkId() );
+        }catch (Exception vExc){
+        }
+
     }
 }

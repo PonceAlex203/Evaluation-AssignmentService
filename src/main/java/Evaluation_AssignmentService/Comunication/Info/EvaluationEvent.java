@@ -3,10 +3,8 @@ package Evaluation_AssignmentService.Comunication.Info;
 import java.io.Serializable;
 
 public class EvaluationEvent implements Serializable {
-    private EnumDegreeWorkStateType type;
-    private Long degreeWorkId;
-
-    public EvaluationEvent() {}
+    private final EnumDegreeWorkStateType type;
+    private final Long degreeWorkId;
 
     public EvaluationEvent(Long degreeWorkId, EnumDegreeWorkStateType type) {
         this.type = type;

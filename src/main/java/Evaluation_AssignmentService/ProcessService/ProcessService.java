@@ -1,5 +1,10 @@
 package Evaluation_AssignmentService.ProcessService;
 
+import Evaluation_AssignmentService.Comunication.Info.EnumDegreeWorkStateType;
+import Evaluation_AssignmentService.Comunication.Info.EvaluationEvent;
+import Evaluation_AssignmentService.Comunication.Info.NotificationEvent;
+import Evaluation_AssignmentService.Comunication.Publisher.MessageNotification;
+import Evaluation_AssignmentService.Comunication.Publisher.Publisher;
 import Evaluation_AssignmentService.Dto.ProcessDTO;
 import Evaluation_AssignmentService.Enum.EnumProcessStatus;
 import Evaluation_AssignmentService.ProcessEntity.ProcessFactory;
@@ -23,11 +28,13 @@ import java.util.List;
 public abstract class ProcessService<T extends BaseProcess, D extends ProcessDTO> {
     protected final ProcessRepository<T> repository;
     protected final ProcessFactory processFactory;
+    protected final Publisher publisher;
 
     @Autowired
-    public ProcessService(ProcessRepository<T> repository, ProcessFactory processFactory) {
+    public ProcessService(ProcessRepository<T> repository, ProcessFactory processFactory, Publisher pPublisher) {
         this.repository = repository;
         this.processFactory = processFactory;
+        this.publisher = pPublisher;
     }
 
     /**
@@ -67,7 +74,12 @@ public abstract class ProcessService<T extends BaseProcess, D extends ProcessDTO
         if(this.extractByDegreeWorkId(pNewProcess.getDegreeworkId()) != null)
             throw new ProcessException(EnumTypeExceptions.EXISTING_ID);
         validateBeforeCreate(pNewProcess);
-        return repository.save(pNewProcess);
+        T vNewProcess = repository.save(pNewProcess);
+        //
+        sendSubmittedNotification(vNewProcess);
+        sendStatusChangeEvent(vNewProcess);
+        //
+        return vNewProcess;
     }
 
     /**
@@ -82,7 +94,12 @@ public abstract class ProcessService<T extends BaseProcess, D extends ProcessDTO
         validateRequirements(vCurrentProcess);
         SynchronizeData(vCurrentProcess, pReUploadProcess);
         vCurrentProcess.setStatus(EnumProcessStatus.PENDING);
-        return repository.save(vCurrentProcess);
+        repository.save(vCurrentProcess);
+        //
+        sendUpdatedNotification(vCurrentProcess);
+        sendStatusChangeEvent(vCurrentProcess);
+        //
+        return vCurrentProcess;
     }
 
     /**
@@ -101,13 +118,33 @@ public abstract class ProcessService<T extends BaseProcess, D extends ProcessDTO
         vCurrentProcess.setStatus(pNewStatus);
         updateInternalData(vCurrentProcess);
         validateRequirements(vCurrentProcess);
-        return repository.save(vCurrentProcess);
+        repository.save(vCurrentProcess);
+        //
+        sendEvaluatedNotification(vCurrentProcess);
+        sendStatusChangeEvent(vCurrentProcess);
+        //
+        return vCurrentProcess;
     }
+    /**
+     * Validates that the process can be evaluated based on its current status.
+     * A process can only be evaluated if it is in PENDING status.
+     *
+     * @param pProcess Process instance to validate
+     * @throws ProcessException if the process cannot be evaluated due to its current status
+     */
     private void validateCanBeEvaluated(T pProcess){
         validateCurrentStatus(pProcess);
         if(!pProcess.getStatus().equals(EnumProcessStatus.PENDING))
             throw new ProcessException(EnumTypeExceptions.PROCESS_NOT_PENDING);
     }
+
+    /**
+     * Validates that the process can be resubmitted based on its current status.
+     * A process can only be resubmitted if it is in REJECTED status.
+     *
+     * @param pProcess Process instance to validate
+     * @throws ProcessException if the process cannot be resubmitted due to its current status
+     */
     private void validateCanBeResubmitted(T pProcess){
         validateCurrentStatus(pProcess);
         if(!pProcess.getStatus().equals(EnumProcessStatus.REJECTED))
@@ -116,6 +153,10 @@ public abstract class ProcessService<T extends BaseProcess, D extends ProcessDTO
 
     /**
      * Validates the current process status before performing actions.
+     * Processes in FAILED or APPROVED status cannot be modified or evaluated.
+     *
+     * @param pCurrentProcess Process instance to verify
+     * @throws ProcessException if the process is FAILED or APPROVED
      */
     private void validateCurrentStatus(T pCurrentProcess){
         if(pCurrentProcess.getStatus().equals(EnumProcessStatus.FAILED))
@@ -158,6 +199,24 @@ public abstract class ProcessService<T extends BaseProcess, D extends ProcessDTO
     public T extractByDegreeWorkId(Long pDegreeWorkId){
         return repository.findByDegreeworkId(pDegreeWorkId).orElse(null);
     }
+
+
+    private void sendUpdatedNotification(T pProcess){
+        publisher.sendToNotificationQueue(new NotificationEvent(pProcess.getDegreeworkId()
+                ,MessageNotification.ProcessUpdated(pProcess)));
+    }
+    private void sendEvaluatedNotification(T pProcess){
+        publisher.sendToNotificationQueue(new NotificationEvent(pProcess.getDegreeworkId()
+                ,MessageNotification.ProcessEvaluated(pProcess)));
+    }
+    private void sendSubmittedNotification(T pProcess){
+        publisher.sendToNotificationQueue(new NotificationEvent(pProcess.getDegreeworkId()
+                ,MessageNotification.ProcessSubmitted(pProcess)));
+    }
+    protected final void sendStatusChangeEvent(T pProcess, EnumDegreeWorkStateType pNewStatus){
+        publisher.sendToModifierQueue(new EvaluationEvent(pProcess.getDegreeworkId(), pNewStatus));
+    }
+    protected abstract void sendStatusChangeEvent(T pProcess);
 
     /**
      * Defines custom update behavior for a specific process type.
