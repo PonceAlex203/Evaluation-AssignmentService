@@ -26,6 +26,6 @@ public class FormatABuilder implements IProcessBuilder<FormatA, FormatADTO> {
         if (dto.getDegreeWorkId() == null) {
             throw new ProcessException(EnumTypeExceptions.NULL_PARAMETER);
         }
-        return new FormatA(dto.getDegreeWorkId(), dto.getUrl(), dto.getCompanyLetterPath());
+        return new FormatA(dto.getDegreeWorkId(), dto.getUrl());
     }
 }

@@ -5,7 +5,6 @@ import Evaluation_AssignmentService.ProcessEvaluation.Dto.FormatADTO;
 import Evaluation_AssignmentService.ProcessEvaluation.ProcessController.ProcessController;
 import Evaluation_AssignmentService.ProcessEvaluation.ProcessEntity.Draft;
 import Evaluation_AssignmentService.ProcessEvaluation.ProcessEntity.FormatA;
-import Evaluation_AssignmentService.ProcessEvaluation.ProcessEntity.Presentation;
 import Evaluation_AssignmentService.ProcessEvaluation.ProcessService.ProcessFacade;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -19,8 +18,6 @@ import org.springframework.http.ResponseEntity;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -33,13 +30,11 @@ public class ProcessControllerTest {
 
     private Draft draft;
     private FormatA formatA;
-    private Presentation presentation;
 
     @BeforeEach
     void setUp() {
         draft = new Draft(1L, "url-draft");
         formatA = new FormatA(1L, "url-formatA", "company-letter");
-        presentation = new Presentation(1L, List.of(10L, 20L));
         controller = new ProcessController(processFacade);
     }
 

@@ -27,7 +27,6 @@ public class ProcessBuilderTest {
         assertNotNull(result);
         assertEquals(10L, result.getDegreeworkId());
         assertEquals("http://example.com/draft.pdf", result.getUrl());
-        assertEquals(0, result.getDaysPassed()); // por defecto
         assertEquals(EnumProcessStatus.PENDING, result.getStatus());
     }
 
@@ -36,7 +35,6 @@ public class ProcessBuilderTest {
         FormatADTO dto = new FormatADTO();
         dto.setDegreeWorkId(5L);
         dto.setUrl("http://example.com/formatA.pdf");
-        dto.setCompanyLetterPath("/letters/companyA.pdf");
 
         FormatABuilder builder = new FormatABuilder();
         FormatA result = builder.buildFromDTO(dto);
@@ -52,7 +50,6 @@ public class ProcessBuilderTest {
     void testFormatABuilderBuildFromDTO_NullDegreeWorkIdThrowsException() {
         FormatADTO dto = new FormatADTO();
         dto.setUrl("http://example.com/formatA.pdf");
-        dto.setCompanyLetterPath("/letters/companyA.pdf");
 
         FormatABuilder builder = new FormatABuilder();
 

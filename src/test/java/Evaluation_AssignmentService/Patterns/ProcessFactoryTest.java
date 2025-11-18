@@ -30,7 +30,6 @@ public class ProcessFactoryTest {
         FormatADTO dto = new FormatADTO();
         dto.setDegreeWorkId(1L);
         dto.setUrl("http://url/formatA");
-        dto.setCompanyLetterPath("/company/letter");
 
         BaseProcess result = factory.createProcessFromDTO(dto);
 
