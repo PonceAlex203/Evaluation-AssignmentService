@@ -90,7 +90,7 @@ public abstract class ProcessService<T extends BaseProcess> {
         T vCurrentProcess = this.findByDegreeWorkId(pReUploadProcess.getDegreeworkId());
         validateCanBeResubmitted(vCurrentProcess);
         validateRequirements(vCurrentProcess);
-        SynchronizeData(vCurrentProcess, pReUploadProcess);
+        vCurrentProcess.setUrl(pReUploadProcess.getUrl());
         vCurrentProcess.setStatus(EnumProcessStatus.PENDING);
         repository.save(vCurrentProcess);
         //
@@ -170,13 +170,6 @@ public abstract class ProcessService<T extends BaseProcess> {
             throw new ProcessException(EnumTypeExceptions.INVALID_NEW_STATUS);
         if(pNewStatus.equals(EnumProcessStatus.FAILED))
             throw new ProcessException(EnumTypeExceptions.INVALID_NEW_STATUS);
-    }
-
-    /**
-     * Synchronizes data between current and updated processes.
-     */
-    protected void SynchronizeData(T pCurrentProcess, T pUpdateProcess){
-        pCurrentProcess.setUrl(pUpdateProcess.getUrl());
     }
 
     /**

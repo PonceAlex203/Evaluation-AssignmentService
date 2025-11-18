@@ -45,17 +45,6 @@ public class FormatAService extends ProcessService<FormatA> {
             throw new ProcessException(EnumTypeExceptions.NOT_FOUND);
     }
 
-    /**
-     * Synchronizes additional data specific to FormatA entities.
-     *
-     * @param pCurrentProcess the current FormatA instance in the database
-     * @param pUpdateProcess the new FormatA data to synchronize
-     */
-    @Override
-    protected void SynchronizeData(FormatA pCurrentProcess, FormatA pUpdateProcess){
-        super.SynchronizeData(pCurrentProcess, pUpdateProcess);
-        pCurrentProcess.setCompanyLetterPath(pCurrentProcess.getCompanyLetterPath());
-    }
 
     @Override
     protected void sendStatusChangeEvent(FormatA pProcess) {

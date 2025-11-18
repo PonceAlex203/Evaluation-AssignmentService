@@ -34,7 +34,6 @@ public class ProcessControllerTest {
     @BeforeEach
     void setUp() {
         draft = new Draft(1L, "url-draft");
-        formatA = new FormatA(1L, "url-formatA", "company-letter");
         controller = new ProcessController(processFacade);
     }
 

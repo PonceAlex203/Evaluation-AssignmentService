@@ -33,7 +33,6 @@ public class FormatAServiceTest {
 
     @BeforeEach
     void setUp() {
-        formatA = new FormatA(1L, "http://url.com", "/company/letter");
         formatA.setStatus(EnumProcessStatus.PENDING);
     }
 
@@ -56,13 +55,13 @@ public class FormatAServiceTest {
 
     @Test
     void testReUploadProcess() {
-        FormatA rejected = new FormatA(1L, "url1", "path");
+        FormatA rejected = new FormatA(1L, "url1");
         rejected.setStatus(EnumProcessStatus.REJECTED);
 
         when(repository.findByDegreeworkId(1L)).thenReturn(Optional.of(rejected));
         when(repository.save(any())).thenReturn(rejected);
 
-        FormatA updated = new FormatA(1L, "newUrl", "path");
+        FormatA updated = new FormatA(1L, "newUrl");
         updated.setStatus(EnumProcessStatus.REJECTED);
 
         FormatA result = formatAService.reUploadProcess(updated);
@@ -72,7 +71,7 @@ public class FormatAServiceTest {
 
     @Test
     void testEvaluateProcess() {
-        FormatA pending = new FormatA(1L, "url", "path");
+        FormatA pending = new FormatA(1L, "url");
         pending.setStatus(EnumProcessStatus.PENDING);
 
         when(repository.findByDegreeworkId(1L)).thenReturn(Optional.of(pending));

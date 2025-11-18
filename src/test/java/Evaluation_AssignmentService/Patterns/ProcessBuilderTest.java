@@ -42,7 +42,6 @@ public class ProcessBuilderTest {
         assertNotNull(result);
         assertEquals(5L, result.getDegreeworkId());
         assertEquals("http://example.com/formatA.pdf", result.getUrl());
-        assertEquals("/letters/companyA.pdf", result.getCompanyLetterPath());
         assertEquals(EnumProcessStatus.PENDING, result.getStatus());
     }
 
