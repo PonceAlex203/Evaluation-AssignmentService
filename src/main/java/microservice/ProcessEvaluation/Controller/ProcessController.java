@@ -47,16 +47,20 @@ public class ProcessController {
         FormatAResponseDTO vUploadFormatA = processFacade.reUploadFormatA(pUpdatedFormatA);
         return ResponseEntity.ok(vUploadFormatA);
     }
-    @PutMapping("/formatA/evaluate")
-    public ResponseEntity<FormatAResponseDTO> evaluateFormatA(@RequestBody EvaluationDTO request) {
-        FormatAResponseDTO vEvaluatedFormatA = processFacade.evaluateFormatA(request.getDegreeWorkId(), request);
-        return ResponseEntity.ok(vEvaluatedFormatA);
-    }
     @GetMapping("/formatA/pending")
     public ResponseEntity<List<FormatAResponseDTO>> getPendingFormatsA() {
         return ResponseEntity.ok(processFacade.getFormatsAByStatus(EnumProcessStatus.PENDING));
     }
-
+    @PutMapping("/formatA/evaluate/approve")
+    public ResponseEntity<FormatAResponseDTO> approveFormatA(@RequestBody EvaluationDTO request) {
+        FormatAResponseDTO vEvaluatedFormatA = processFacade.evaluateFormatA(request.getDegreeWorkId(), request,EnumProcessStatus.APPROVED);
+        return ResponseEntity.ok(vEvaluatedFormatA);
+    }
+    @PutMapping("/formatA/evaluate/reject")
+    public ResponseEntity<FormatAResponseDTO> rejectFormatA(@RequestBody EvaluationDTO request) {
+        FormatAResponseDTO vEvaluatedFormatA = processFacade.evaluateFormatA(request.getDegreeWorkId(), request,EnumProcessStatus.REJECTED);
+        return ResponseEntity.ok(vEvaluatedFormatA);
+    }
 
     //Draft
     @GetMapping("/draft/{id}")
@@ -77,9 +81,14 @@ public class ProcessController {
         DraftResponseDTO vUploadDraft = processFacade.saveDraft(pUpdatedDraft);
         return ResponseEntity.ok(vUploadDraft);
     }
-    @PutMapping("/draft/evaluate")
-    public ResponseEntity<DraftResponseDTO> evaluateDraft(@RequestBody EvaluationDTO request) {
-        DraftResponseDTO vEvaluatedDraft = processFacade.evaluateDraft(request.getDegreeWorkId(), request);
+    @PutMapping("/draft/evaluate/approve")
+    public ResponseEntity<DraftResponseDTO> approveDraft(@RequestBody EvaluationDTO request) {
+        DraftResponseDTO vEvaluatedDraft = processFacade.evaluateDraft(request.getDegreeWorkId(), request, EnumProcessStatus.APPROVED);
+        return ResponseEntity.ok(vEvaluatedDraft);
+    }
+    @PutMapping("/draft/evaluate/reject")
+    public ResponseEntity<DraftResponseDTO> rejectDraft(@RequestBody EvaluationDTO request) {
+        DraftResponseDTO vEvaluatedDraft = processFacade.evaluateDraft(request.getDegreeWorkId(), request, EnumProcessStatus.REJECTED);
         return ResponseEntity.ok(vEvaluatedDraft);
     }
     @PutMapping("/draft/Assignment")

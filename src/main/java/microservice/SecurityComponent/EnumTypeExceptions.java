@@ -26,6 +26,7 @@ public enum EnumTypeExceptions {
     NOT_ASSIGNED_PROCESS("P-409", "El proceso seleccionado no ha sido asignado para la evaluacion",HttpStatus.CONFLICT),
     IDENTICAL_EVALUATORS_IDS("P-400","Los ids de los jurados son los mismos, debe escoger 2 diferentes",HttpStatus.BAD_REQUEST),
     NOT_ASSIGNED_TO_SELECTED_PROCESS("P-400","No es jurado del proceso solicitado a evaluar",HttpStatus.CONFLICT),
+    ALREADY_EVALUATED("P-400","Ya se realizo la evaluacion correspondiente, no puede realizarla de nuevo",HttpStatus.CONFLICT),
     NULL_PARAMETER("P-400", "Parametro nulo", HttpStatus.BAD_REQUEST);
 
     private final String message;

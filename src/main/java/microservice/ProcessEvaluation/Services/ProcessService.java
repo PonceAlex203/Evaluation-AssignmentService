@@ -5,7 +5,6 @@ import microservice.Comunication.Info.EvaluationEvent;
 import microservice.Comunication.Info.NotificationEvent;
 import microservice.Comunication.Publisher.MessageNotification;
 import microservice.Comunication.Publisher.Publisher;
-import microservice.ProcessEvaluation.Entities.Process.Evaluation;
 import microservice.ProcessEvaluation.Enums.EnumProcessStatus;
 import microservice.ProcessEvaluation.Entities.Factories.ProcessFactory;
 import microservice.SecurityComponent.EnumTypeExceptions;

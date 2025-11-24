@@ -76,6 +76,7 @@ public abstract class BaseProcess {
 
     public void setEvaluation(Evaluation evaluation) {this.evaluation = evaluation;}
 
+    @JsonIgnore
     public Long getDegreeworkId(){
         return core.getDegreeWorkId();
     }
@@ -83,13 +84,16 @@ public abstract class BaseProcess {
     public void setStatus(EnumProcessStatus pNewStatus) { this.status = pNewStatus;}
     public void setEvaluator(Long pIdEvaluator){evaluation.setEvaluatorId(pIdEvaluator);}
     @JsonIgnore
-    public boolean isAssigned() {
-        return evaluation != null && evaluation.isAssigned();
-    }
+    public boolean isApproved(){return evaluation != null && evaluation.isApproved();}
+    @JsonIgnore
+    public boolean isAssigned() {return evaluation != null && evaluation.isAssigned();}
+    @JsonIgnore
+    public boolean isEvaluated(){return evaluation != null && evaluation.isEvaluated(); }
     @JsonIgnore
     public boolean isEvaluator(Long pIdEvaluator){
-        if(!isAssigned()) return false;
-        else return evaluation.getEvaluatorId() == pIdEvaluator;
+        if(isAssigned())
+            return evaluation.getEvaluatorId() == pIdEvaluator;
+        else return false;
     }
     // -------------------- Abstract methods --------------------
     @JsonIgnore

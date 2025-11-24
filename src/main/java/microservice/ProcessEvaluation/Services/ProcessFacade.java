@@ -90,14 +90,15 @@ public class ProcessFacade {
     /**
      * Evaluates a draft process.
      */
-    public DraftResponseDTO evaluateDraft(Long pId, EvaluationDTO pDto) {
-        Draft vDraft = draftService.evaluateProcess(pId,pDto.getEvaluatorId(), pDto.getStatus() ,pDto.getComment());
+    public DraftResponseDTO evaluateDraft(Long pId, EvaluationDTO pDto, EnumProcessStatus pNewStatus) {
+        Draft vDraft = draftService.evaluateProcess(pId, pDto.getEvaluatorId(), pNewStatus, pDto.getComment());
 
         IMapper<Draft, DraftResponseDTO> vMapper =
                 processMapperFactory.getMapper(EnumTypeProcess.DRAFT);
 
         return vMapper.toDto(vDraft);
     }
+
 
     /**
      * Retrieves drafts by their status.
@@ -172,8 +173,8 @@ public class ProcessFacade {
     /**
      * Evaluates a FormatA process.
      */
-    public FormatAResponseDTO evaluateFormatA(Long pId, EvaluationDTO pDto) {
-        FormatA vFormatA = formatAService.evaluateProcess(pId, pDto.getEvaluatorId(), pDto.getStatus(),pDto.getComment());
+    public FormatAResponseDTO evaluateFormatA(Long pId, EvaluationDTO pDto,EnumProcessStatus pNewStatus) {
+        FormatA vFormatA = formatAService.evaluateProcess(pId, pDto.getEvaluatorId(), pNewStatus,pDto.getComment());
         IMapper<FormatA, FormatAResponseDTO> vMapper =
                 processMapperFactory.getMapper(EnumTypeProcess.FORMAT_A);
         return vMapper.toDto(vFormatA);

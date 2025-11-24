@@ -1,6 +1,7 @@
 package microservice.ProcessEvaluation.Entities.Process;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import microservice.ProcessEvaluation.Enums.EnumProcessStatus;
 import microservice.ProcessEvaluation.Enums.EnumTypeProcess;
 import microservice.ProcessEvaluation.Entities.Base.CoreProcess;
 import jakarta.persistence.*;
@@ -74,23 +75,23 @@ public class Draft extends BaseProcess {
         this.evaluation2.setEvaluatorId(pId);
     }
     @JsonIgnore
-    public boolean isBothAssigned() {
-        boolean vFirstAssigned = evaluation != null && evaluation.isAssigned();
-        boolean vSecondAssigned = evaluation2 != null && evaluation2.isAssigned();
-
-        return vFirstAssigned && vSecondAssigned;
-    }
-
+    public boolean isBothAssigned() {return isAssigned() && isAssigned2();}
+    @JsonIgnore
+    public boolean isBothEvaluated(){return isEvaluated() && isEvaluated2();}
     @Override
     public EnumTypeProcess getTypeProcess() {
         return EnumTypeProcess.DRAFT;
     }
-    @Override
     @JsonIgnore
-    public boolean isEvaluator(Long pIdEvaluator){
-        if (super.isEvaluator(pIdEvaluator))
-            return true;
-        else return evaluation2 != null && evaluation2.getEvaluatorId() == pIdEvaluator;
+    public boolean isApproved2(){return evaluation2 != null && evaluation2.isApproved();}
+    @JsonIgnore
+    public boolean isAssigned2(){return evaluation2 != null && evaluation2.isAssigned();}
+    @JsonIgnore
+    public boolean isEvaluated2(){ return evaluation2.isEvaluated(); }
+    @JsonIgnore
+    public boolean isEvaluator2(Long pIdEvaluator){
+        if(isAssigned2())
+            return evaluation2.getEvaluatorId() == pIdEvaluator;
+        else return false;
     }
-
 }

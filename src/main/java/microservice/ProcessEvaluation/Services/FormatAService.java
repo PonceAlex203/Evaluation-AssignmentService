@@ -17,13 +17,11 @@ import org.springframework.stereotype.Service;
  */
 @Service
 public class FormatAService extends ProcessService<FormatA> {
-    private final FormatARepository formatARepository;
     private final byte maxAttempts = 3;
 
     @Autowired
     public FormatAService(FormatARepository repository, ProcessFactory processFactory, Publisher pPublisher) {
         super(repository, processFactory, pPublisher);
-        this.formatARepository = repository;
     }
 
     @Override

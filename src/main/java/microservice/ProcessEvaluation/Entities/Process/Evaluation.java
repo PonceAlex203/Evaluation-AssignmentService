@@ -23,7 +23,7 @@ public class Evaluation {
     private String comment;
 
     @Enumerated(EnumType.STRING)
-    private EnumProcessStatus evaluationStatus = EnumProcessStatus.PENDING;;
+    private EnumProcessStatus evaluationStatus = EnumProcessStatus.PENDING;
 
     public Evaluation() {
     }

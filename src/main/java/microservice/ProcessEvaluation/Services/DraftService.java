@@ -14,38 +14,23 @@ import microservice.SecurityComponent.ProcessException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-/**
- * Service class that manages logic and validations for @Draft processes.
- */
 @Service
 public class DraftService extends ProcessService<Draft>{
 
     @Autowired
-    private final DraftRepository draftRepository;
     private final FormatAService formatAService;
 
     public DraftService(DraftRepository repository, ProcessFactory processFactory, FormatAService formatAService, Publisher pPublisher) {
         super(repository, processFactory, pPublisher);
-        this.draftRepository = repository;
         this.formatAService = formatAService;
     }
 
-    /**
-     * Validates that the corresponding FormatA process exists and is approved
-     * before allowing the creation of a new Draft.
-     */
     @Override
     protected void validateRequirements(Draft pCurrentProcess) {
         if(pCurrentProcess.isExpired())
             throw new ProcessException(EnumTypeExceptions.EXPIRED_TIME);
     }
 
-    /**
-     * Validates that a related FormatA process exists and is approved
-     * before allowing the creation of a new Draft.
-     *
-     * @param pNewProcess the new Draft process to validate
-     */
     @Override
     protected void validateBeforeCreate(Draft pNewProcess) {
         FormatA formatA = formatAService.extractByDegreeWorkId(pNewProcess.getDegreeworkId());
@@ -68,52 +53,38 @@ public class DraftService extends ProcessService<Draft>{
         }
         publisher.sendToModifierQueue(new EvaluationEvent(pProcess.getDegreeworkId(), vNewStatus));
     }
-
-    public Draft assignedEvaluators(Long pIdDw, Long pId1, Long pId2){
-        Draft vCurrentDraft = this.findByDegreeWorkId(pIdDw);
-        if(pId1 == pId2)
-            throw new ProcessException(EnumTypeExceptions.IDENTICAL_EVALUATORS_IDS);
-        if(vCurrentDraft.isAssigned())
-            throw new ProcessException(EnumTypeExceptions.ALREADY_ASSIGNED);
-        if(vCurrentDraft.isEvaluator(pId1) || vCurrentDraft.isEvaluator(pId2))
-            throw new ProcessException(EnumTypeExceptions.PREVIOUSLY_ASSIGNED);
-        vCurrentDraft.setEvaluation(new Evaluation(pId1));
-        vCurrentDraft.setEvaluation2(new Evaluation(pId2));
-        vCurrentDraft.setStatus(EnumProcessStatus.ASSIGNED);
-        Draft vUpdatedDraft = this.repository.save(vCurrentDraft);
-        sendStatusChangeEvent(vUpdatedDraft);
-        return vUpdatedDraft;
-    }
     @Override
     protected void validateEvaluator(Draft pProcess, Long pId) {
-        if (!pProcess.isEvaluator(pId))
+        if (!pProcess.isEvaluator(pId) && !pProcess.isEvaluator2(pId)) {
             throw new ProcessException(EnumTypeExceptions.NOT_ASSIGNED_TO_SELECTED_PROCESS);
-
+        }
+        if (pProcess.isEvaluator(pId) && pProcess.isEvaluated()) {
+            throw new ProcessException(EnumTypeExceptions.ALREADY_EVALUATED);
+        }
+        if (pProcess.isEvaluator2(pId) && pProcess.isEvaluated2()) {
+            throw new ProcessException(EnumTypeExceptions.ALREADY_EVALUATED);
+        }
     }
 
     @Override
     protected void executeEvaluation(Draft pProcess, Long pIdEvaluator, EnumProcessStatus pNewStatus, String pComment) {
-        if(pIdEvaluator.equals(pProcess.getEvaluation().getEvaluatorId()))
+        if(pProcess.isEvaluator(pIdEvaluator))
             pProcess.getEvaluation().evaluate(pNewStatus,pComment);
         else
             pProcess.getEvaluation2().evaluate(pNewStatus,pComment);
         pProcess.setStatus(EnumProcessStatus.PARTIAL);
-        if(pProcess.getEvaluation().getEvaluationStatus() == EnumProcessStatus.APPROVED
-                && pProcess.getEvaluation2().getEvaluationStatus() == EnumProcessStatus.APPROVED)
-            pProcess.setStatus(EnumProcessStatus.APPROVED);
-        else if(pProcess.getEvaluation().getEvaluationStatus() == EnumProcessStatus.REJECTED
-                || pProcess.getEvaluation2().getEvaluationStatus() == EnumProcessStatus.REJECTED)
-            pProcess.setStatus(EnumProcessStatus.REJECTED);
+        updateGeneralStatus(pProcess);
     }
 
     @Override
     protected void validateCanBeEvaluated(Draft pProcess) {
-        this.validateCurrentStatus(pProcess);
+        validateCurrentStatus(pProcess);
+
         if(!pProcess.isBothAssigned())
             throw new ProcessException(EnumTypeExceptions.NOT_ASSIGNED_PROCESS);
         if(pProcess.isExpired())
             throw new ProcessException(EnumTypeExceptions.EXPIRED_TIME);
-        if(pProcess.getEvaluation().isEvaluated() && pProcess.getEvaluation2().isEvaluated())
+        if(pProcess.isBothEvaluated())
             throw new ProcessException(EnumTypeExceptions.PROCESS_NOT_PENDING);
     }
 
@@ -131,6 +102,30 @@ public class DraftService extends ProcessService<Draft>{
         vNewEvaluation.setEvaluatorId(pIdEvaluator);
         if(pProcess.getEvaluation() == null) pProcess.setEvaluation(vNewEvaluation);
         else pProcess.setEvaluation2(vNewEvaluation);
+    }
+    private void updateGeneralStatus(Draft pProcess){
+        if(!pProcess.isBothEvaluated())
+            return;
+        if(pProcess.isApproved() && pProcess.isApproved2())
+            pProcess.setStatus(EnumProcessStatus.APPROVED);
+        else if(pProcess.getEvaluation().isRejected() || pProcess.getEvaluation2().isRejected())
+            pProcess.setStatus(EnumProcessStatus.REJECTED);
+    }
+
+    public Draft assignedEvaluators(Long pIdDw, Long pId1, Long pId2){
+        Draft vCurrentDraft = this.findByDegreeWorkId(pIdDw);
+        if(pId1 == pId2)
+            throw new ProcessException(EnumTypeExceptions.IDENTICAL_EVALUATORS_IDS);
+        if(vCurrentDraft.isBothAssigned())
+            throw new ProcessException(EnumTypeExceptions.ALREADY_ASSIGNED);
+        if(vCurrentDraft.isEvaluator(pId1) || vCurrentDraft.isEvaluator(pId2))
+            throw new ProcessException(EnumTypeExceptions.PREVIOUSLY_ASSIGNED);
+        vCurrentDraft.setEvaluation(new Evaluation(pId1));
+        vCurrentDraft.setEvaluation2(new Evaluation(pId2));
+        vCurrentDraft.setStatus(EnumProcessStatus.ASSIGNED);
+        Draft vUpdatedDraft = this.repository.save(vCurrentDraft);
+        sendStatusChangeEvent(vUpdatedDraft);
+        return vUpdatedDraft;
     }
 }
 
