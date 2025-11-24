@@ -13,10 +13,10 @@ public class ProcessDTO extends CoreProcessDTO{
         super(pId);
     }
 
-    public String getUrl() {
-        return url;
-    }
-    public void setUrl(String url) {
-        this.url = url;
-    }
+    /**
+     * @return the document URL
+     */
+    public String getUrl() {return url;}
+
+    public void setUrl(String url) {this.url = url;}
 }

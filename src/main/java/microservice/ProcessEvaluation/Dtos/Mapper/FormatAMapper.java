@@ -5,7 +5,11 @@ import microservice.ProcessEvaluation.Entities.Process.FormatA;
 import org.springframework.stereotype.Component;
 
 @Component
+/**
+ * Mapper for FormatA entities to DTOs
+ */
 public class FormatAMapper extends BaseProcessMapper<FormatA, FormatAResponseDTO> {
+
     @Override
     protected FormatAResponseDTO createResponseInstance() {
         return new FormatAResponseDTO();

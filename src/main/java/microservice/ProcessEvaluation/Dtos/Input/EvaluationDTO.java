@@ -1,8 +1,7 @@
 package microservice.ProcessEvaluation.Dtos.Input;
 
 /**
- * DTO for evaluating a process.
- * Contains comment and new status to update.
+ * Data transfer object for process evaluation
  */
 public class EvaluationDTO extends CoreProcessDTO{
     private Long evaluatorId;
@@ -10,10 +9,11 @@ public class EvaluationDTO extends CoreProcessDTO{
     public EvaluationDTO() { }
 
     public Long getEvaluatorId() {return evaluatorId;}
-    public void setEvaluatorId(Long evaluatorId) {this.evaluatorId = evaluatorId;}
     public String getComment() {
         return comment;
     }
+
+    public void setEvaluatorId(Long evaluatorId) {this.evaluatorId = evaluatorId;}
     public void setComment(String comment) {
         this.comment = comment;
     }

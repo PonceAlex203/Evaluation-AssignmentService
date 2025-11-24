@@ -1,5 +1,8 @@
 package microservice.ProcessEvaluation.Dtos.Input;
 
+/**
+ * Data transfer object for single evaluator assignment
+ */
 public class AssignmentDTO extends CoreProcessDTO{
     private Long evaluatorId;
 
@@ -7,5 +10,5 @@ public class AssignmentDTO extends CoreProcessDTO{
         super();
     }
     public Long getEvaluatorId() {return evaluatorId;}
-    public void setEvaluatorId(Long evaluatorId) {this.evaluatorId = evaluatorId;}
+    private void setEvaluatorId(Long evaluatorId) {this.evaluatorId = evaluatorId;}
 }

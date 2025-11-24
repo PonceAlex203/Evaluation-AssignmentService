@@ -5,6 +5,9 @@ import microservice.ProcessEvaluation.Entities.Process.Draft;
 import org.springframework.stereotype.Component;
 
 @Component
+/**
+ * Mapper for Draft entities to DTOs
+ */
 public class DraftMapper extends BaseProcessMapper<Draft, DraftResponseDTO> {
     @Override
     protected DraftResponseDTO createResponseInstance() {

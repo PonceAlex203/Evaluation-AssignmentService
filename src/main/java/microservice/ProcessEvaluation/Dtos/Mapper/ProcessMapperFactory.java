@@ -11,6 +11,9 @@ import java.util.HashMap;
 import java.util.Map;
 
 @Component
+/**
+ * Factory for retrieving process mappers by type
+ */
 public class ProcessMapperFactory {
 
     private final Map<EnumTypeProcess, IMapper<?, ?>> mapperMap = new HashMap<>();
@@ -21,6 +24,11 @@ public class ProcessMapperFactory {
         mapperMap.put(EnumTypeProcess.FORMAT_A,pFormatAMapper);
     }
 
+    /**
+     * Retrieves mapper for the specified process type
+     * @param pType the process type
+     * @return the appropriate mapper instance
+     */
     @SuppressWarnings("unchecked")
     public <T extends BaseProcess, R extends ProcessResponseDTO>
     IMapper<T, R> getMapper(EnumTypeProcess pType) {

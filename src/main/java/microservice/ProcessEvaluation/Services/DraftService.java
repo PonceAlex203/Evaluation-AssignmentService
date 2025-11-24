@@ -2,6 +2,8 @@ package microservice.ProcessEvaluation.Services;
 
 import microservice.Comunication.Info.EnumDegreeWorkStateType;
 import microservice.Comunication.Info.EvaluationEvent;
+import microservice.Comunication.Info.NotificationEvent;
+import microservice.Comunication.Publisher.MessageNotification;
 import microservice.Comunication.Publisher.Publisher;
 import microservice.ProcessEvaluation.Entities.Factories.ProcessFactory;
 import microservice.ProcessEvaluation.Entities.Process.Draft;
@@ -124,8 +126,15 @@ public class DraftService extends ProcessService<Draft>{
         vCurrentDraft.setEvaluation2(new Evaluation(pId2));
         vCurrentDraft.setStatus(EnumProcessStatus.ASSIGNED);
         Draft vUpdatedDraft = this.repository.save(vCurrentDraft);
+        //
+        sendAssignedsNotification(vUpdatedDraft);
         sendStatusChangeEvent(vUpdatedDraft);
+        //
         return vUpdatedDraft;
+    }
+    private void sendAssignedsNotification(Draft pProcess){
+        publisher.sendToNotificationQueue(new NotificationEvent(pProcess.getDegreeworkId()
+                , MessageNotification.processAssigneds(pProcess)));
     }
 }
 
