@@ -110,7 +110,7 @@ public abstract class ProcessService<T extends BaseProcess> {
         validateRequirements(vProcess);
         T vEvaluatedProcess = repository.save(vProcess);
         //
-        sendEvaluatedNotification(vProcess);
+        sendStatusChangeEvent(vEvaluatedProcess);
         sendEvaluatedNotification(vEvaluatedProcess);
         //
         return vEvaluatedProcess;
@@ -121,7 +121,10 @@ public abstract class ProcessService<T extends BaseProcess> {
         validateBeforeAssigning(vProcess, pIdEvaluator);
         executeAssignment(vProcess, pIdEvaluator);
         T vUpdatedProcess = repository.save(vProcess);
+        //
+        sendStatusChangeEvent(vProcess);
         sendAssignedNotification(vUpdatedProcess);
+        //
         return vUpdatedProcess;
     }
     /**

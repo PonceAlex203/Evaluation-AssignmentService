@@ -14,11 +14,12 @@ public enum EnumDegreeWorkStateType {
     FORMAT_A_APPROVED,
     /** Permanently rejected after 3 attempts */
     FORMAT_A_FAILED,
-
     /** Director creates the draft */
     DRAFT,
     /** Draft submitted for review */
     DRAFT_SUBMITTED,
+    /** First jury assigned by department head */
+    FIRS_JURY_ASSIGNED,
     /** Jury assigned by department head */
     JURY_ASSIGNED,
     /** First jury evaluation phase */
