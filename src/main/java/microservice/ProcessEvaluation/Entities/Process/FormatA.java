@@ -1,11 +1,10 @@
 package microservice.ProcessEvaluation.Entities.Process;
 
+import jakarta.persistence.*;
 import microservice.ProcessEvaluation.Entities.Base.CoreProcess;
+import microservice.ProcessEvaluation.Enums.EnumAssignmentStatus;
 import microservice.ProcessEvaluation.Enums.EnumProcessStatus;
 import microservice.ProcessEvaluation.Enums.EnumTypeProcess;
-import jakarta.persistence.Entity;
-import jakarta.persistence.Table;
-import jakarta.persistence.UniqueConstraint;
 
 /**
  * Entity representing a Format A process.
@@ -21,10 +20,12 @@ public class FormatA extends BaseProcess {
 
     public FormatA() {
         super();
+        assignDefaultEvaluator();
     }
 
     public FormatA(CoreProcess pCore, String pUrl) {
         super(pCore, pUrl);
+        assignDefaultEvaluator();
     }
 
     public byte getAttempts(){ return this.attempts; }
@@ -38,9 +39,13 @@ public class FormatA extends BaseProcess {
     }
 
     @Override
-    public void setStatus(EnumProcessStatus status) {
-        super.setStatus(status);
-        if(this.status.equals(EnumProcessStatus.REJECTED))
+    public void setGeneralEvaluationStatus(EnumProcessStatus status) {
+        super.setGeneralEvaluationStatus(status);
+        if(this.generalEvaluationStatus.equals(EnumProcessStatus.REJECTED))
             this.attempts++;
+    }
+    private void assignDefaultEvaluator(){
+        this.evaluation = new Evaluation(1L);
+        this.assignmentStatus = EnumAssignmentStatus.ASSIGNED;
     }
 }

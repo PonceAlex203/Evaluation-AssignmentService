@@ -33,10 +33,6 @@ public class Evaluation {
         assignmentDate = new Date();
     }
     @JsonIgnore
-    public boolean isAssigned() {
-        return evaluatorId != null;
-    }
-    @JsonIgnore
     public boolean isEvaluated() {
         return evaluationStatus != EnumProcessStatus.PENDING;
     }

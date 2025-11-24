@@ -101,7 +101,7 @@ public class ProcessFacade {
 
 
     /**
-     * Retrieves drafts by their status.
+     * Retrieves drafts by their generalEvaluationStatus.
      */
     public List<DraftResponseDTO> getDraftsByStatus(EnumProcessStatus pStatus) {
         List<Draft> vDrafts = draftService.findByStatus(pStatus);
@@ -181,7 +181,7 @@ public class ProcessFacade {
     }
 
     /**
-     * Retrieves all FormatA processes filtered by status.
+     * Retrieves all FormatA processes filtered by generalEvaluationStatus.
      */
     public List<FormatAResponseDTO> getFormatsAByStatus(EnumProcessStatus pStatus) {
         List<FormatA> vFormatsA = formatAService.findByStatus(pStatus);

@@ -22,7 +22,7 @@ public enum EnumTypeExceptions {
     PROCESS_FAILED("P-423", "El proceso actual ha sido rechazado definitivamente", HttpStatus.LOCKED),
 
     PREVIOUSLY_ASSIGNED("P-400", "El evaluador ya se encuentra asignado a este proceso, no puede volver a asignarlo, seleccione otro",HttpStatus.CONFLICT),
-    ALREADY_ASSIGNED("P-409", "Este proceso ya tiene completo el proceso de asignacion para la evaluacion",HttpStatus.CONFLICT),
+    ALREADY_ASSIGNED("P-409", "Este proceso ya tiene completa la asignacion de evaluacion",HttpStatus.CONFLICT),
     NOT_ASSIGNED_PROCESS("P-409", "El proceso seleccionado no ha sido asignado para la evaluacion",HttpStatus.CONFLICT),
     IDENTICAL_EVALUATORS_IDS("P-400","Los ids de los jurados son los mismos, debe escoger 2 diferentes",HttpStatus.BAD_REQUEST),
     NOT_ASSIGNED_TO_SELECTED_PROCESS("P-400","No es jurado del proceso solicitado a evaluar",HttpStatus.CONFLICT),

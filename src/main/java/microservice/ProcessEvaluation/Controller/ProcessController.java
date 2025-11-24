@@ -196,19 +196,17 @@ public class ProcessController {
     }
 
     /**
-     * Retrieves drafts in pending, partial, and assigned status
+     * Retrieves drafts in pending, partial, and assigned generalEvaluationStatus
      * @return combined list of drafts in various states
      */
     @GetMapping("/draft/pending")
     public ResponseEntity<List<DraftResponseDTO>> getPendingDrafts() {
         List<DraftResponseDTO> vListPending = processFacade.getDraftsByStatus(EnumProcessStatus.PENDING);
         List<DraftResponseDTO> vListPartial = processFacade.getDraftsByStatus(EnumProcessStatus.PARTIAL);
-        List<DraftResponseDTO> vListAssigned = processFacade.getDraftsByStatus(EnumProcessStatus.ASSIGNED);
 
         List<DraftResponseDTO> vCombined = new ArrayList<>();
         vCombined.addAll(vListPending);
         vCombined.addAll(vListPartial);
-        vCombined.addAll(vListAssigned);
 
         return ResponseEntity.ok(vCombined);
     }

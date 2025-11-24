@@ -16,7 +16,7 @@ public class ProcessHandlerException {
     /**
      * Handles ProcessException and returns a standardized error response.
      * @param pException the exception thrown
-     * @return ResponseEntity containing error details and HTTP status
+     * @return ResponseEntity containing error details and HTTP generalEvaluationStatus
      */
     @ExceptionHandler(ProcessException.class)
     public ResponseEntity<ErrorResponse> handleProcessException(ProcessException pException) {

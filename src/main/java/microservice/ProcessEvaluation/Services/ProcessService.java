@@ -5,6 +5,7 @@ import microservice.Comunication.Info.EvaluationEvent;
 import microservice.Comunication.Info.NotificationEvent;
 import microservice.Comunication.Publisher.MessageNotification;
 import microservice.Comunication.Publisher.Publisher;
+import microservice.ProcessEvaluation.Enums.EnumAssignmentStatus;
 import microservice.ProcessEvaluation.Enums.EnumProcessStatus;
 import microservice.ProcessEvaluation.Entities.Factories.ProcessFactory;
 import microservice.SecurityComponent.EnumTypeExceptions;
@@ -45,13 +46,13 @@ public abstract class ProcessService<T extends BaseProcess> {
     }
 
     /**
-     * Retrieves all processes with a given status.
+     * Retrieves all processes with a given generalEvaluationStatus.
      *
-     * @param pStatus the process status
-     * @return a list of processes with the given status
+     * @param pStatus the process generalEvaluationStatus
+     * @return a list of processes with the given generalEvaluationStatus
      */
     public List<T> findByStatus(EnumProcessStatus pStatus) {
-        return repository.findByStatus(pStatus);
+        return repository.findByGeneralEvaluationStatus(pStatus);
     }
 
     /**
@@ -76,7 +77,7 @@ public abstract class ProcessService<T extends BaseProcess> {
         T vNewProcess = repository.save(pNewProcess);
         //
         sendSubmittedNotification(vNewProcess);
-        sendStatusChangeEvent(vNewProcess);
+        sendEvaluationStatusChangeEvent(vNewProcess);
         //
         return vNewProcess;
     }
@@ -92,13 +93,13 @@ public abstract class ProcessService<T extends BaseProcess> {
         validateCanBeResubmitted(vCurrentProcess);
         validateRequirements(vCurrentProcess);
         vCurrentProcess.setUrl(pReUploadProcess.getUrl());
-        vCurrentProcess.setStatus(EnumProcessStatus.PENDING);
-        repository.save(vCurrentProcess);
+        vCurrentProcess.setGeneralEvaluationStatus(EnumProcessStatus.PENDING);
+        T vNewProcess = repository.save(vCurrentProcess);
         //
-        sendUpdatedNotification(vCurrentProcess);
-        sendStatusChangeEvent(vCurrentProcess);
+        sendUpdatedNotification(vNewProcess);
+        sendEvaluationStatusChangeEvent(vNewProcess);
         //
-        return vCurrentProcess;
+        return vNewProcess;
     }
 
     public T evaluateProcess(Long pIdDw, Long pIdEvaluator, EnumProcessStatus pNewStatus, String pComment){
@@ -110,7 +111,7 @@ public abstract class ProcessService<T extends BaseProcess> {
         validateRequirements(vProcess);
         T vEvaluatedProcess = repository.save(vProcess);
         //
-        sendStatusChangeEvent(vEvaluatedProcess);
+        sendEvaluationStatusChangeEvent(vEvaluatedProcess);
         sendEvaluatedNotification(vEvaluatedProcess);
         //
         return vEvaluatedProcess;
@@ -122,40 +123,40 @@ public abstract class ProcessService<T extends BaseProcess> {
         executeAssignment(vProcess, pIdEvaluator);
         T vUpdatedProcess = repository.save(vProcess);
         //
-        sendStatusChangeEvent(vProcess);
+        sendAssignmentStatusChangeEvent(vProcess);
         sendAssignedNotification(vUpdatedProcess);
         //
         return vUpdatedProcess;
     }
     /**
-     * Validates that the process can be resubmitted based on its current status.
-     * A process can only be resubmitted if it is in REJECTED status.
+     * Validates that the process can be resubmitted based on its current generalEvaluationStatus.
+     * A process can only be resubmitted if it is in REJECTED generalEvaluationStatus.
      *
      * @param pProcess Process instance to validate
-     * @throws ProcessException if the process cannot be resubmitted due to its current status
+     * @throws ProcessException if the process cannot be resubmitted due to its current generalEvaluationStatus
      */
     private void validateCanBeResubmitted(T pProcess) {
         validateCurrentStatus(pProcess);
-        if (!pProcess.getStatus().equals(EnumProcessStatus.REJECTED))
+        if (!pProcess.getGeneralEvaluationStatus().equals(EnumProcessStatus.REJECTED))
             throw new ProcessException(EnumTypeExceptions.NON_MODIFICABLE_PROCESS);
     }
 
     /**
-     * Validates the current process status before performing actions.
-     * Processes in FAILED or APPROVED status cannot be modified or evaluated.
+     * Validates the current process generalEvaluationStatus before performing actions.
+     * Processes in FAILED or APPROVED generalEvaluationStatus cannot be modified or evaluated.
      *
      * @param pCurrentProcess Process instance to verify
      * @throws ProcessException if the process is FAILED or APPROVED
      */
     protected void validateCurrentStatus(T pCurrentProcess) {
-        if (pCurrentProcess.getStatus().equals(EnumProcessStatus.FAILED))
+        if (pCurrentProcess.getGeneralEvaluationStatus().equals(EnumProcessStatus.FAILED))
             throw new ProcessException(EnumTypeExceptions.PROCESS_FAILED);
-        if (pCurrentProcess.getStatus().equals(EnumProcessStatus.APPROVED))
+        if (pCurrentProcess.getGeneralEvaluationStatus().equals(EnumProcessStatus.APPROVED))
             throw new ProcessException(EnumTypeExceptions.PROCESS_APPROVED);
     }
 
     /**
-     * Ensures the new status is valid for update.
+     * Ensures the new generalEvaluationStatus is valid for update.
      */
     private void validateNewStatus(EnumProcessStatus pNewStatus) {
         if (pNewStatus == null || pNewStatus.equals(EnumProcessStatus.PENDING))
@@ -202,11 +203,19 @@ public abstract class ProcessService<T extends BaseProcess> {
                 , MessageNotification.processAssigned(pProcess)));
     }
 
-    protected final void sendStatusChangeEvent(T pProcess, EnumDegreeWorkStateType pNewStatus) {
+    protected final void sendEvaluationStatusChangeEvent(T pProcess, EnumDegreeWorkStateType pNewStatus) {
         publisher.sendToModifierQueue(new EvaluationEvent(pProcess.getDegreeworkId(), pNewStatus));
     }
 
-    protected abstract void sendStatusChangeEvent(T pProcess);
+    protected abstract void sendEvaluationStatusChangeEvent(T pProcess);
+    protected void sendAssignmentStatusChangeEvent(T pProcess){
+        EnumDegreeWorkStateType vNewStatus;
+        if(pProcess.getAssignmentStatus() == EnumAssignmentStatus.ASSIGNED)
+            vNewStatus = EnumDegreeWorkStateType.DRAFT_JURY_ASSIGNED;
+        else
+            vNewStatus = EnumDegreeWorkStateType.FIRS_DRAFT_JURY_ASSIGNED;
+        publisher.sendToModifierQueue(new EvaluationEvent(pProcess.getDegreeworkId(), vNewStatus));
+    }
 
     /**
      * Defines validations before creating a process.

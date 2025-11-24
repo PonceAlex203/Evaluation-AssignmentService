@@ -18,12 +18,12 @@ import java.util.Optional;
 public interface ProcessRepository<T extends BaseProcess> extends JpaRepository<T, Long> {
 
     /**
-     * Retrieves a list of processes filtered by their current status.
+     * Retrieves a list of processes filtered by their current generalEvaluationStatus.
      *
-     * @param status the process status to filter by
-     * @return a list of processes with the given status
+     * @param status the process generalEvaluationStatus to filter by
+     * @return a list of processes with the given generalEvaluationStatus
      */
-    List<T> findByStatus(EnumProcessStatus status);
+    List<T> findByGeneralEvaluationStatus(EnumProcessStatus status);
 
     /**
      * Finds a process by its associated degree work ID.

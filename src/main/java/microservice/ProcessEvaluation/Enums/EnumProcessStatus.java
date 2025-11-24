@@ -5,7 +5,6 @@ package microservice.ProcessEvaluation.Enums;
  * Represents the current state of a process.
  */
 public enum EnumProcessStatus {
-    ASSIGNED,
     APPROVED,
     REJECTED,
     PENDING,

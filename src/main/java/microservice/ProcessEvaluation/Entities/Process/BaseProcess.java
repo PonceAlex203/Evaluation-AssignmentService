@@ -1,6 +1,7 @@
 package microservice.ProcessEvaluation.Entities.Process;
 
 import microservice.ProcessEvaluation.Entities.Base.CoreProcess;
+import microservice.ProcessEvaluation.Enums.EnumAssignmentStatus;
 import microservice.ProcessEvaluation.Enums.EnumProcessStatus;
 import microservice.ProcessEvaluation.Enums.EnumTypeProcess;
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -17,7 +18,7 @@ import jakarta.persistence.EnumType;
 
 /**
  * Abstract base entity for all process types.
- * Provides common attributes such as date, status, and comments.
+ * Provides common attributes such as date, generalEvaluationStatus, and comments.
  */
 
 @Entity
@@ -33,8 +34,10 @@ public abstract class BaseProcess {
     protected String url;
 
     @Enumerated(EnumType.STRING)
-    protected EnumProcessStatus status = EnumProcessStatus.PENDING;
+    protected EnumProcessStatus generalEvaluationStatus = EnumProcessStatus.PENDING;
 
+    @Enumerated(EnumType.STRING)
+    protected EnumAssignmentStatus assignmentStatus = EnumAssignmentStatus.UNASSIGNED;
     @Embedded
     protected Evaluation evaluation;
 
@@ -80,21 +83,27 @@ public abstract class BaseProcess {
     public Long getDegreeworkId(){
         return core.getDegreeWorkId();
     }
-    public EnumProcessStatus getStatus(){ return this.status; }
-    public void setStatus(EnumProcessStatus pNewStatus) { this.status = pNewStatus;}
+    public EnumProcessStatus getGeneralEvaluationStatus(){ return this.generalEvaluationStatus; }
+    public void setGeneralEvaluationStatus(EnumProcessStatus pNewStatus) { this.generalEvaluationStatus = pNewStatus;}
     public void setEvaluator(Long pIdEvaluator){evaluation.setEvaluatorId(pIdEvaluator);}
     @JsonIgnore
     public boolean isApproved(){return evaluation != null && evaluation.isApproved();}
     @JsonIgnore
-    public boolean isAssigned() {return evaluation != null && evaluation.isAssigned();}
+    public boolean isFullAssigned() {return assignmentStatus == EnumAssignmentStatus.ASSIGNED; }
+    @JsonIgnore
+    public boolean isUnassigned(){ return assignmentStatus == EnumAssignmentStatus.UNASSIGNED; }
     @JsonIgnore
     public boolean isEvaluated(){return evaluation != null && evaluation.isEvaluated(); }
+    @JsonIgnore
+    public boolean isAssigned(){ return evaluation != null; }
     @JsonIgnore
     public boolean isEvaluator(Long pIdEvaluator){
         if(isAssigned())
             return evaluation.getEvaluatorId() == pIdEvaluator;
         else return false;
     }
+    public EnumAssignmentStatus getAssignmentStatus() {return assignmentStatus;}
+    public void setAssignmentStatus(EnumAssignmentStatus assignmentStatus) {this.assignmentStatus = assignmentStatus;}
     // -------------------- Abstract methods --------------------
     @JsonIgnore
     public abstract EnumTypeProcess getTypeProcess();

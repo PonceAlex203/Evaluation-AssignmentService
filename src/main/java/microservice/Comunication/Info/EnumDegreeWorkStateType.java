@@ -19,11 +19,11 @@ public enum EnumDegreeWorkStateType {
     /** Draft submitted for review */
     DRAFT_SUBMITTED,
     /** First jury assigned by department head */
-    FIRS_JURY_ASSIGNED,
+    FIRS_DRAFT_JURY_ASSIGNED,
     /** Jury assigned by department head */
-    JURY_ASSIGNED,
+    DRAFT_JURY_ASSIGNED,
     /** First jury evaluation phase */
-    FIRST_JURY_EVALUATION,
+    FIRST_DRAFT_JURY_EVALUATION,
     /** Draft rejected by coordinator */
     DRAFT_REJECTED,
     /** Draft approved by coordinator */
