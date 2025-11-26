@@ -4,14 +4,18 @@ package microservice.Comunication.Info;
  * Represents the possible states of a degree work process
  */
 public enum EnumDegreeWorkStateType {
-    /** Director is creating Format A */
+    /**
+     * Director is creating Format A
+     */
     FORMAT_A,
-    /** Format A submitted for review */
+    /**
+     * Format A submitted for review
+     */
     FORMAT_A_SUBMITTED,
-    /** Format A rejected by coordinator */
+    /**
+     * Format A rejected by coordinator
+     */
     FORMAT_A_REJECTED,
-    /** Format A approved by coordinator */
-    FORMAT_A_APPROVED,
     /** Permanently rejected after 3 attempts */
     FORMAT_A_FAILED,
     /** Director creates the draft */

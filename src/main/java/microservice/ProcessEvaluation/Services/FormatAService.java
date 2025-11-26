@@ -75,7 +75,7 @@ public class FormatAService extends ProcessService<FormatA> {
         EnumDegreeWorkStateType vNewStatus;
         switch (pProcess.getGeneralEvaluationStatus()){
             case PENDING -> vNewStatus = EnumDegreeWorkStateType.FORMAT_A_SUBMITTED;
-            case APPROVED -> vNewStatus = EnumDegreeWorkStateType.FORMAT_A_APPROVED;
+            case APPROVED -> vNewStatus = EnumDegreeWorkStateType.DRAFT;
             case REJECTED -> vNewStatus = EnumDegreeWorkStateType.FORMAT_A_REJECTED;
             case FAILED -> vNewStatus = EnumDegreeWorkStateType.FORMAT_A_FAILED;
             default -> vNewStatus = EnumDegreeWorkStateType.FORMAT_A;
