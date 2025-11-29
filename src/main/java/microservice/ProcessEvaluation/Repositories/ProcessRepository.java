@@ -5,7 +5,6 @@ import microservice.ProcessEvaluation.Enums.EnumDegreeWorkStateType;
 import microservice.ProcessEvaluation.Enums.EnumProcessStatus;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
-import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
@@ -26,7 +25,7 @@ public interface ProcessRepository<T extends BaseProcess, R extends ProcessRepos
         SELECT p FROM #{#entityName} p
         WHERE p.core.degreeWorkId = :pDegreeWorkId
     """)
-    Optional<T> findByDegreeWorkId(Long pDegreeWorkId);
+    Optional<T> findBy(Long pDegreeWorkId);
 
 
     // 2. Buscar procesos por evaluador + estado de evaluacion
@@ -68,32 +67,13 @@ public interface ProcessRepository<T extends BaseProcess, R extends ProcessRepos
     """)
     Optional<T> findByDegreeWorkIdAndEvaluationStatus(Long pDegreeWorkId, EnumProcessStatus pEvaluationStatus);
 
-
-    // 6. Buscar por degreeWorkId + estado general + estado evaluación
-    @Query("""
-        SELECT p FROM #{#entityName} p
-        WHERE p.core.degreeWorkId = :pDegreeWorkId
-          AND p.generalStatus = :pGeneralStatus
-          AND p.evaluation.evaluationStatus = :pEvaluationStatus
-    """)
-    List<T> findByDegreeWorkGeneralAndEvaluationStatus(
-            Long pDegreeWorkId,
-            EnumDegreeWorkStateType pGeneralStatus,
-            EnumProcessStatus pEvaluationStatus);
-
-
     // 7. Procesos donde NO hay evaluacion (evaluation null)
     @Query("""
         SELECT p FROM #{#entityName} p
         WHERE p.core.degreeWorkId = :pDegreeWorkId
           AND p.evaluation IS NULL
     """)
-    Optional<T> findUnassignedByDegreeWorkId(Long pDegreeWorkId);
+    Optional<T> findUnassignedBy(Long pDegreeWorkId);
 
-    @Query("""
-        SELECT p FROM #{#entityName} p
-        WHERE p.generalStatus = :pStatus
-    """)
-    List<T> findAllByGeneralStatus(@Param("pStatus") EnumDegreeWorkStateType pStatus);
 }
 

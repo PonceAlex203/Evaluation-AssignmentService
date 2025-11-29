@@ -21,7 +21,7 @@ public class FormatAService extends ProcessService<FormatA,FormatARepository> {
     }
 
     @Override
-    public FormatA getApprovedByDegreeWorkId(Long pDegreeWorkId) {
+    public FormatA getApproved(Long pDegreeWorkId) {
         return repository.findByDegreeWorkAndGeneralStatus(pDegreeWorkId,EnumDegreeWorkStateType.DRAFT).orElse(null);
     }
 

@@ -27,17 +27,38 @@ public class DraftService extends ProcessService<Draft, DraftRepository>{
     }
 
     protected Draft searchUnassignedByDwIdAndDeptId(Long pDegreeWorkId, Long pDepartmentHeadId){
-        return repository.findUnassignedDraftByDepartmentHeadAndDegreeWorkId(pDepartmentHeadId,pDegreeWorkId).
+        return repository.findUnassignedDraft(pDepartmentHeadId,pDegreeWorkId).
                 orElseThrow(()->new ProcessException(EnumTypeExceptions.NOT_FOUND));
     }
 
+    @Override
+    protected Draft searchPendingAssignment(Long pDegreeWorkId) {
+        return repository.findAllBy(pDegreeWorkId, List.of(
+                EnumDegreeWorkStateType.FIRS_DRAFT_JURY_ASSIGNED,
+                EnumDegreeWorkStateType.DRAFT_SUBMITTED
+                )).
+                orElseThrow(()->new ProcessException(EnumTypeExceptions.NOT_FOUND));
+    }
+
+    public List<Draft> getPendingEvaluate(Long pEvaluatorId){
+        return repository.findAllBy(pEvaluatorId, EnumProcessStatus.PENDING);
+    }
+    public List<Draft> getPendingAssignment(Long pDepartmentHead){
+        return repository.findPendingAssignmentBy(pDepartmentHead);
+    }
+
+    @Override
+    protected Draft searchAssignedPending(Long pDegreeWorkId, Long pEvaluatorId) {
+        return repository.findEvaluator(pDegreeWorkId,pEvaluatorId,EnumProcessStatus.PENDING).
+                orElseThrow(()->new ProcessException(EnumTypeExceptions.NOT_FOUND));
+    }
     @Override
     protected void executeUpload(Draft vCurrentProcess) {
             vCurrentProcess.setGeneralStatus(EnumDegreeWorkStateType.DRAFT_SUBMITTED);
     }
 
     @Override
-    public Draft getApprovedByDegreeWorkId(Long pDegreeWorkId) {
+    public Draft getApproved(Long pDegreeWorkId) {
         return repository.findByDegreeWorkAndGeneralStatus(pDegreeWorkId,EnumDegreeWorkStateType.DRAFT_APPROVED).
                 orElse(null);
     }
@@ -49,7 +70,7 @@ public class DraftService extends ProcessService<Draft, DraftRepository>{
     }
     @Override
     protected void validateBeforeCreate(Draft pNewProcess) {
-        if(formatAService.getApprovedByDegreeWorkId(pNewProcess.getDegreeworkId()) == null)
+        if(formatAService.getApproved(pNewProcess.getDegreeworkId()) == null)
             throw new ProcessException(EnumTypeExceptions.PREVIOUS_PROCESS_NOT_APPROVED);
     }
 

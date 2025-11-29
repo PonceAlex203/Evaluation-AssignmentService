@@ -57,7 +57,7 @@ public class ProcessFacade {
      * Retrieves a draft by its degree work ID.
      */
     public Draft findDraftByDegreeWorkId(Long pId) {
-        return draftService.searchByDegreeWorkId(pId);
+        return draftService.search(pId);
     }
 
     /**
@@ -119,16 +119,17 @@ public class ProcessFacade {
         return vMapper.toDto(vDraft);
     }
 
-    public List<DraftResponseDTO> getPendingAssignedDraftsByDepartmentHeadId(Long pDepartmentHeadId){
-        List<Draft> vDrafts = draftService.getPendingEvaluationByEvaluator(pDepartmentHeadId);
+    public List<DraftResponseDTO> getPendingAssignedDrafts(Long pDepartmentHeadId){
+        List<Draft> vDrafts = draftService.getPendingAssignment(pDepartmentHeadId);
 
         IMapper<Draft, DraftResponseDTO> vMapper =
                 processMapperFactory.getMapper(EnumTypeProcess.DRAFT);
 
         return vDrafts.stream().map(vMapper::toDto).toList();
     }
-    public List<DraftResponseDTO> getPendingEvaluateDraftsByEvaluatorId(Long pIdEvaluator){
-        List<Draft> vDrafts = draftService.getPendingEvaluationByEvaluator(pIdEvaluator);
+
+    public List<DraftResponseDTO> getPendingEvaluateDrafts(Long pIdEvaluator){
+        List<Draft> vDrafts = draftService.getPendingEvaluate(pIdEvaluator);
 
         IMapper<Draft, DraftResponseDTO> vMapper =
                 processMapperFactory.getMapper(EnumTypeProcess.DRAFT);
@@ -142,7 +143,7 @@ public class ProcessFacade {
      * Retrieves a FormatA process by its degree work ID.
      */
     public FormatAResponseDTO getFormatAByDegreeWorkId(Long pId) {
-        FormatA vFormatA = formatAService.getByDegreeWorkId(pId);
+        FormatA vFormatA = formatAService.getBy(pId);
         IMapper<FormatA, FormatAResponseDTO> vMapper =
                 processMapperFactory.getMapper(EnumTypeProcess.FORMAT_A);
         return vMapper.toDto(vFormatA);
@@ -190,7 +191,7 @@ public class ProcessFacade {
      * Retrieves all FormatA processes filtered by generalEvaluationStatus.
      */
     public List<FormatAResponseDTO> getPendingFormatsA(Long pCoordinatorId) {
-        List<FormatA> vFormatsA = formatAService.getPendingEvaluationByEvaluator(pCoordinatorId);
+        List<FormatA> vFormatsA = formatAService.getPendingEvaluations(pCoordinatorId);
 
         IMapper<FormatA, FormatAResponseDTO> vMapper =
                 processMapperFactory.getMapper(EnumTypeProcess.FORMAT_A);

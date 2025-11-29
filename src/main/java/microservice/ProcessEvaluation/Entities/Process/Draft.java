@@ -19,7 +19,7 @@ import java.util.Date;
         uniqueConstraints = @UniqueConstraint(columnNames = "degreework_id")
 )
 public class Draft extends BaseProcess {
-    private Long departmentHeadId = 1L;
+    private Long departmentHeadId = 2L;
 
     @Temporal(TemporalType.TIMESTAMP)
     private Date deadline;
@@ -29,10 +29,12 @@ public class Draft extends BaseProcess {
 
     public Draft() {
         super();
+        generalStatus = EnumDegreeWorkStateType.DRAFT_SUBMITTED;
     }
 
     public Draft(CoreProcess pCore, String pUrl) {
         super(pCore, pUrl);
+        generalStatus = EnumDegreeWorkStateType.DRAFT_SUBMITTED;
     }
 
     @PostLoad
@@ -74,8 +76,7 @@ public class Draft extends BaseProcess {
     public void setEvaluator2(Long pId){
         this.evaluation2.setEvaluatorId(pId);
     }
-    @JsonIgnore
-    public boolean isPartialAssignment() {return generalStatus == EnumDegreeWorkStateType.FIRS_DRAFT_JURY_ASSIGNED;}
+
     @JsonIgnore
     public boolean isBothEvaluated(){return isEvaluated() && isEvaluated2();}
     @Override
@@ -92,9 +93,4 @@ public class Draft extends BaseProcess {
             return evaluation2.getEvaluatorId() == pIdEvaluator;
         else return false;
     }
-    @JsonIgnore
-    public boolean isAnyEvaluator(Long pIdEvaluator) {
-        return isEvaluator(pIdEvaluator) || isEvaluator2(pIdEvaluator);
-    }
-
 }

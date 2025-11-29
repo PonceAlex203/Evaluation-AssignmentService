@@ -5,7 +5,6 @@ import microservice.Comunication.Info.NotificationEvent;
 import microservice.Comunication.Publisher.MessageNotification;
 import microservice.Comunication.Publisher.Publisher;
 import microservice.ProcessEvaluation.Entities.Factories.ProcessFactory;
-import microservice.ProcessEvaluation.Entities.Process.Draft;
 import microservice.ProcessEvaluation.Enums.EnumProcessStatus;
 import microservice.SecurityComponent.EnumTypeExceptions;
 import microservice.ProcessEvaluation.Entities.Process.BaseProcess;
@@ -39,35 +38,35 @@ public abstract class ProcessService<T extends BaseProcess, R extends ProcessRep
         return repository.findAll();
     }
     
-    public T searchByDegreeWorkId(Long pDegreeworkId) {
-        return repository.findByDegreeWorkId(pDegreeworkId)
+    public T search(Long pDegreeworkId) {
+        return repository.findBy(pDegreeworkId)
                 .orElseThrow(() -> new ProcessException(EnumTypeExceptions.NOT_FOUND));
     }
 
-    public T getByDegreeWorkId(Long pDegreeWorkId) {
-        return repository.findByDegreeWorkId(pDegreeWorkId).orElse(null);
+    public T getBy(Long pDegreeWorkId) {
+        return repository.findBy(pDegreeWorkId).orElse(null);
     }
 
     //Specific
 
-    public abstract T getApprovedByDegreeWorkId(Long pDegreeWorkId);
+    public abstract T getApproved(Long pDegreeWorkId);
 
-    public List<T> getPendingEvaluationByEvaluator(Long pEvaluatorId) {
+    public List<T> getPendingEvaluations(Long pEvaluatorId) {
         return repository.findByEvaluatorAndEvaluationStatus(pEvaluatorId,EnumProcessStatus.PENDING);
     }
 
-    protected T searchRejectedProcessByDwId(Long pIdDw) {
+    protected T searchRejectedProcess(Long pIdDw) {
         return repository.findByDegreeWorkIdAndEvaluationStatus(pIdDw,EnumProcessStatus.REJECTED).
                 orElseThrow(()->new ProcessException(EnumTypeExceptions.NOT_FOUND));
     }
 
-    protected T searchAssignedPendingEvaluation(Long pDegreeWorkId, Long pEvaluatorId) {
+    protected T searchAssignedPending(Long pDegreeWorkId, Long pEvaluatorId) {
         return repository.findByDegreeWorkEvaluatorAndEvaluationStatus(pDegreeWorkId,pEvaluatorId,EnumProcessStatus.PENDING).
                 orElseThrow(()->new ProcessException(EnumTypeExceptions.NOT_FOUND));
     }
 
     protected T searchPendingAssignment(Long pDegreeWorkId) {
-        return repository.findUnassignedByDegreeWorkId(pDegreeWorkId).
+        return repository.findUnassignedBy(pDegreeWorkId).
                 orElseThrow(()->new ProcessException(EnumTypeExceptions.NOT_FOUND));
     }
 
@@ -80,7 +79,7 @@ public abstract class ProcessService<T extends BaseProcess, R extends ProcessRep
 
     ////
     private void checkExistenceProcess(T pNewProcess){
-        if (this.getByDegreeWorkId(pNewProcess.getDegreeworkId()) != null)
+        if (this.getBy(pNewProcess.getDegreeworkId()) != null)
             throw new ProcessException(EnumTypeExceptions.EXISTING_ID);
     }
 
@@ -96,7 +95,7 @@ public abstract class ProcessService<T extends BaseProcess, R extends ProcessRep
     }
 
     public T reUploadProcess(T pReUploadProcess) {
-        T vCurrentProcess = searchRejectedProcessByDwId(pReUploadProcess.getDegreeworkId());
+        T vCurrentProcess = searchRejectedProcess(pReUploadProcess.getDegreeworkId());
         validateRequirements(vCurrentProcess);
         vCurrentProcess.setUrl(pReUploadProcess.getUrl());
         executeUpload(vCurrentProcess);
@@ -108,7 +107,7 @@ public abstract class ProcessService<T extends BaseProcess, R extends ProcessRep
         return vNewProcess;
     }
     public T evaluateProcess(Long pIdDw, Long pIdEvaluator, EnumProcessStatus pNewStatus, String pComment){
-        T vProcess = searchAssignedPendingEvaluation(pIdDw, pIdEvaluator);
+        T vProcess = searchAssignedPending(pIdDw, pIdEvaluator);
         executeEvaluation(vProcess, pIdEvaluator,pNewStatus, pComment);
         validateRequirements(vProcess);
         T vEvaluatedProcess = repository.save(vProcess);
