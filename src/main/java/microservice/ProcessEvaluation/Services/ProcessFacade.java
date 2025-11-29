@@ -90,8 +90,8 @@ public class ProcessFacade {
     /**
      * Evaluates a draft process.
      */
-    public DraftResponseDTO evaluateDraft(Long pId, EvaluationDTO pDto, EnumProcessStatus pNewStatus) {
-        Draft vDraft = draftService.evaluateProcess(pId, pDto.getEvaluatorId(), pNewStatus, pDto.getComment());
+    public DraftResponseDTO evaluateDraft(Long pEvaluatorId, EvaluationDTO pDto, EnumProcessStatus pNewStatus) {
+        Draft vDraft = draftService.evaluateProcess(pDto.getDegreeWorkId(), pEvaluatorId, pNewStatus, pDto.getComment());
 
         IMapper<Draft, DraftResponseDTO> vMapper =
                 processMapperFactory.getMapper(EnumTypeProcess.DRAFT);
@@ -99,18 +99,6 @@ public class ProcessFacade {
         return vMapper.toDto(vDraft);
     }
 
-
-    /**
-     * Retrieves drafts by their generalEvaluationStatus.
-     */
-    public List<DraftResponseDTO> getDraftsByStatus(EnumProcessStatus pStatus) {
-        List<Draft> vDrafts = draftService.findByStatus(pStatus);
-
-        IMapper<Draft, DraftResponseDTO> vMapper =
-                processMapperFactory.getMapper(EnumTypeProcess.DRAFT);
-
-        return vDrafts.stream().map(vMapper::toDto).toList();
-    }
 
     public DraftResponseDTO assignmentDraftEvaluator(AssignmentDTO pAssignment){
         Draft vDraft = draftService.assignmentEvaluator(pAssignment.getDegreeWorkId(), pAssignment.getEvaluatorId());
@@ -128,6 +116,23 @@ public class ProcessFacade {
                 processMapperFactory.getMapper(EnumTypeProcess.DRAFT);
 
         return vMapper.toDto(vDraft);
+    }
+
+    public List<DraftResponseDTO> getPendingAssignedDraftsByDepartmentHeadId(Long pId){
+        List<Draft> vDrafts = draftService.findPendingAssignedByDepartmentHeadId(pId);
+
+        IMapper<Draft, DraftResponseDTO> vMapper =
+                processMapperFactory.getMapper(EnumTypeProcess.DRAFT);
+
+        return vDrafts.stream().map(vMapper::toDto).toList();
+    }
+    public List<DraftResponseDTO> getPendingEvaluateDraftsByEvaluatorId(Long pIdEvaluator){
+        List<Draft> vDrafts = draftService.findPendingEvaluationsByEvaluator(pIdEvaluator);
+
+        IMapper<Draft, DraftResponseDTO> vMapper =
+                processMapperFactory.getMapper(EnumTypeProcess.DRAFT);
+
+        return vDrafts.stream().map(vMapper::toDto).toList();
     }
 
     // ------------------- FormatA methods -------------------
@@ -173,8 +178,8 @@ public class ProcessFacade {
     /**
      * Evaluates a FormatA process.
      */
-    public FormatAResponseDTO evaluateFormatA(Long pId, EvaluationDTO pDto,EnumProcessStatus pNewStatus) {
-        FormatA vFormatA = formatAService.evaluateProcess(pId, pDto.getEvaluatorId(), pNewStatus,pDto.getComment());
+    public FormatAResponseDTO evaluateFormatA(Long pEvaluatorId, EvaluationDTO pDto,EnumProcessStatus pNewStatus) {
+        FormatA vFormatA = formatAService.evaluateProcess(pDto.getDegreeWorkId(), pEvaluatorId, pNewStatus,pDto.getComment());
         IMapper<FormatA, FormatAResponseDTO> vMapper =
                 processMapperFactory.getMapper(EnumTypeProcess.FORMAT_A);
         return vMapper.toDto(vFormatA);

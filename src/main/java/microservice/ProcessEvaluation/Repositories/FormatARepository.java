@@ -8,5 +8,5 @@ import org.springframework.stereotype.Repository;
  * Extends {@link ProcessRepository} to provide specific operations for FormatA processes.
  */
 @Repository
-public interface FormatARepository extends ProcessRepository<FormatA> {
+public interface FormatARepository extends ProcessRepository<FormatA, FormatARepository> {
 }

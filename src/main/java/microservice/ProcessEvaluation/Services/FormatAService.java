@@ -14,7 +14,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 @Service
-public class FormatAService extends ProcessService<FormatA> {
+public class FormatAService extends ProcessService<FormatA,FormatARepository> {
     private final byte maxAttempts = 3;
 
     @Autowired

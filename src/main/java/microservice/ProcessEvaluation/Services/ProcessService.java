@@ -23,13 +23,13 @@ import java.util.List;
  * @param <T> the type of process extending {@link BaseProcess}
  */
 @Transactional
-public abstract class ProcessService<T extends BaseProcess> {
-    protected final ProcessRepository<T> repository;
+public abstract class ProcessService<T extends BaseProcess, R extends ProcessRepository<T,R>> {
+    protected final R repository;
     protected final ProcessFactory processFactory;
     protected final Publisher publisher;
 
     @Autowired
-    public ProcessService(ProcessRepository<T> repository, ProcessFactory processFactory, Publisher pPublisher) {
+    public ProcessService(R repository, ProcessFactory processFactory, Publisher pPublisher) {
         this.repository = repository;
         this.processFactory = processFactory;
         this.publisher = pPublisher;
@@ -64,6 +64,12 @@ public abstract class ProcessService<T extends BaseProcess> {
         return repository.findAll();
     }
 
+    public List<T> findByEvaluatorId(Long pId){
+        return repository.findByEvaluationEvaluatorId(pId);
+    }
+    public List<T> findPendingEvaluationsByEvaluator(Long pId){
+        return repository.findPendingEvaluationsByEvaluator(pId);
+    }
     /**
      * Saves a new process after validation.
      *

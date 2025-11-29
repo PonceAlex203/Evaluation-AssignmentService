@@ -1,8 +1,11 @@
 package microservice.ProcessEvaluation.Repositories;
 
+import microservice.ProcessEvaluation.Entities.Process.Draft;
+import microservice.ProcessEvaluation.Enums.EnumAssignmentStatus;
 import microservice.ProcessEvaluation.Enums.EnumProcessStatus;
 import microservice.ProcessEvaluation.Entities.Process.BaseProcess;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
@@ -15,7 +18,8 @@ import java.util.Optional;
  * @param <T> the type of process that extends {@link BaseProcess}
  */
 @Repository
-public interface ProcessRepository<T extends BaseProcess> extends JpaRepository<T, Long> {
+public interface ProcessRepository<T extends BaseProcess, R extends ProcessRepository<T, R>>
+        extends JpaRepository<T, Long> {
 
     /**
      * Retrieves a list of processes filtered by their current generalEvaluationStatus.
@@ -23,6 +27,7 @@ public interface ProcessRepository<T extends BaseProcess> extends JpaRepository<
      * @param status the process generalEvaluationStatus to filter by
      * @return a list of processes with the given generalEvaluationStatus
      */
+
     List<T> findByGeneralEvaluationStatus(EnumProcessStatus status);
 
     /**
@@ -32,4 +37,13 @@ public interface ProcessRepository<T extends BaseProcess> extends JpaRepository<
      * @return an {@link Optional} containing the process if found, or empty otherwise
      */
     Optional<T> findByCoreDegreeWorkId(Long pDegreeWorkId);
+
+    List<T> findByEvaluationEvaluatorId(Long pEvaluatorId);
+
+    @Query("""
+            SELECT p FROM #{#entityName} p
+            WHERE p.evaluation.evaluatorId = :pEvaluatorId
+              AND p.evaluation.evaluationStatus = 'PENDING'
+            """)
+    List<T> findPendingEvaluationsByEvaluator(Long pEvaluatorId);
 }

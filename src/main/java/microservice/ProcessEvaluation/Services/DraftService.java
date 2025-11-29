@@ -14,13 +14,13 @@ import microservice.ProcessEvaluation.Enums.EnumProcessStatus;
 import microservice.ProcessEvaluation.Repositories.DraftRepository;
 import microservice.SecurityComponent.EnumTypeExceptions;
 import microservice.SecurityComponent.ProcessException;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-@Service
-public class DraftService extends ProcessService<Draft>{
+import java.util.List;
 
-    @Autowired
+@Service
+public class DraftService extends ProcessService<Draft, DraftRepository>{
+
     private final FormatAService formatAService;
 
     public DraftService(DraftRepository repository, ProcessFactory processFactory, FormatAService formatAService, Publisher pPublisher) {
@@ -111,6 +111,7 @@ public class DraftService extends ProcessService<Draft>{
             pProcess.setAssignmentStatus(EnumAssignmentStatus.ASSIGNED);
         }
     }
+
     private void updateGeneralStatus(Draft pProcess){
         if(!pProcess.isBothEvaluated())
             return;
@@ -141,6 +142,13 @@ public class DraftService extends ProcessService<Draft>{
     private void sendAssignedsNotification(Draft pProcess){
         publisher.sendToNotificationQueue(new NotificationEvent(pProcess.getDegreeworkId()
                 , MessageNotification.processAssigneds(pProcess)));
+    }
+
+    public List<Draft> findPendingAssignedByDepartmentHeadId(Long pId){
+        return repository.findByStatusInAndDept(List.of(
+                EnumAssignmentStatus.UNASSIGNED
+                , EnumAssignmentStatus.PARTIAL_ASSIGNED)
+                ,pId);
     }
 }
 

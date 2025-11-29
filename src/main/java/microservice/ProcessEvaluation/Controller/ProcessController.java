@@ -94,7 +94,7 @@ public class ProcessController {
      */
     @PutMapping("/formatA/evaluate/approve")
     public ResponseEntity<FormatAResponseDTO> approveFormatA(@RequestBody EvaluationDTO request) {
-        FormatAResponseDTO vEvaluatedFormatA = processFacade.evaluateFormatA(request.getDegreeWorkId(), request,EnumProcessStatus.APPROVED);
+        FormatAResponseDTO vEvaluatedFormatA = processFacade.evaluateFormatA(1L, request,EnumProcessStatus.APPROVED);
         return ResponseEntity.ok(vEvaluatedFormatA);
     }
 
@@ -105,7 +105,7 @@ public class ProcessController {
      */
     @PutMapping("/formatA/evaluate/reject")
     public ResponseEntity<FormatAResponseDTO> rejectFormatA(@RequestBody EvaluationDTO request) {
-        FormatAResponseDTO vEvaluatedFormatA = processFacade.evaluateFormatA(request.getDegreeWorkId(), request,EnumProcessStatus.REJECTED);
+        FormatAResponseDTO vEvaluatedFormatA = processFacade.evaluateFormatA(1L, request,EnumProcessStatus.REJECTED);
         return ResponseEntity.ok(vEvaluatedFormatA);
     }
 
@@ -158,7 +158,7 @@ public class ProcessController {
      */
     @PutMapping("/draft/evaluate/approve")
     public ResponseEntity<DraftResponseDTO> approveDraft(@RequestBody EvaluationDTO request) {
-        DraftResponseDTO vEvaluatedDraft = processFacade.evaluateDraft(request.getDegreeWorkId(), request, EnumProcessStatus.APPROVED);
+        DraftResponseDTO vEvaluatedDraft = processFacade.evaluateDraft(2L,request, EnumProcessStatus.APPROVED);
         return ResponseEntity.ok(vEvaluatedDraft);
     }
 
@@ -169,7 +169,7 @@ public class ProcessController {
      */
     @PutMapping("/draft/evaluate/reject")
     public ResponseEntity<DraftResponseDTO> rejectDraft(@RequestBody EvaluationDTO request) {
-        DraftResponseDTO vEvaluatedDraft = processFacade.evaluateDraft(request.getDegreeWorkId(), request, EnumProcessStatus.REJECTED);
+        DraftResponseDTO vEvaluatedDraft = processFacade.evaluateDraft(2L, request, EnumProcessStatus.REJECTED);
         return ResponseEntity.ok(vEvaluatedDraft);
     }
 
@@ -199,15 +199,18 @@ public class ProcessController {
      * Retrieves drafts in pending, partial, and assigned generalEvaluationStatus
      * @return combined list of drafts in various states
      */
-    @GetMapping("/draft/pending")
-    public ResponseEntity<List<DraftResponseDTO>> getPendingDrafts() {
-        List<DraftResponseDTO> vListPending = processFacade.getDraftsByStatus(EnumProcessStatus.PENDING);
-        List<DraftResponseDTO> vListPartial = processFacade.getDraftsByStatus(EnumProcessStatus.PARTIAL);
+    @GetMapping("/draft/evaluate/pending")
+    public ResponseEntity<List<DraftResponseDTO>> getPendingEvaluateDraftsByEvluatorId() {
+        List<DraftResponseDTO> vListPending = processFacade.getPendingEvaluateDraftsByEvaluatorId(2L);
 
-        List<DraftResponseDTO> vCombined = new ArrayList<>();
-        vCombined.addAll(vListPending);
-        vCombined.addAll(vListPartial);
-
-        return ResponseEntity.ok(vCombined);
+        return ResponseEntity.ok(vListPending);
     }
+
+    @GetMapping("/draft/assign/pending")
+    public ResponseEntity<List<DraftResponseDTO>> getPendingAssignedDraftsByDeptId() {
+        List<DraftResponseDTO> vListPending = processFacade.getPendingAssignedDraftsByDepartmentHeadId(1L);
+
+        return ResponseEntity.ok(vListPending);
+    }
+
 }

@@ -19,7 +19,7 @@ import java.util.Date;
         uniqueConstraints = @UniqueConstraint(columnNames = "degreework_id")
 )
 public class Draft extends BaseProcess {
-    private Long departmentHeadId;
+    private Long departmentHeadId = 1L;
 
     @Temporal(TemporalType.TIMESTAMP)
     private Date deadline;
