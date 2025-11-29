@@ -1,4 +1,4 @@
-package microservice.Comunication.Info;
+package microservice.ProcessEvaluation.Enums;
 
 /**
  * Represents the possible states of a degree work process

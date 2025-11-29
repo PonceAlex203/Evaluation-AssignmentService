@@ -1,11 +1,11 @@
 package microservice.ProcessEvaluation.Repositories;
 
-import microservice.ProcessEvaluation.Entities.Process.Draft;
-import microservice.ProcessEvaluation.Enums.EnumAssignmentStatus;
-import microservice.ProcessEvaluation.Enums.EnumProcessStatus;
 import microservice.ProcessEvaluation.Entities.Process.BaseProcess;
+import microservice.ProcessEvaluation.Enums.EnumDegreeWorkStateType;
+import microservice.ProcessEvaluation.Enums.EnumProcessStatus;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
@@ -21,29 +21,79 @@ import java.util.Optional;
 public interface ProcessRepository<T extends BaseProcess, R extends ProcessRepository<T, R>>
         extends JpaRepository<T, Long> {
 
-    /**
-     * Retrieves a list of processes filtered by their current generalEvaluationStatus.
-     *
-     * @param status the process generalEvaluationStatus to filter by
-     * @return a list of processes with the given generalEvaluationStatus
-     */
+    // 1. Buscar proceso por DegreeWorkId
+    @Query("""
+        SELECT p FROM #{#entityName} p
+        WHERE p.core.degreeWorkId = :pDegreeWorkId
+    """)
+    Optional<T> findByDegreeWorkId(Long pDegreeWorkId);
 
-    List<T> findByGeneralEvaluationStatus(EnumProcessStatus status);
 
-    /**
-     * Finds a process by its associated degree work ID.
-     *
-     * @param pDegreeWorkId the degree work ID
-     * @return an {@link Optional} containing the process if found, or empty otherwise
-     */
-    Optional<T> findByCoreDegreeWorkId(Long pDegreeWorkId);
+    // 2. Buscar procesos por evaluador + estado de evaluacion
+    @Query("""
+        SELECT p FROM #{#entityName} p
+        WHERE p.evaluation.evaluatorId = :pEvaluatorId
+          AND p.evaluation.evaluationStatus = :pEvaluationStatus
+    """)
+    List<T> findByEvaluatorAndEvaluationStatus(Long pEvaluatorId, EnumProcessStatus pEvaluationStatus);
 
-    List<T> findByEvaluationEvaluatorId(Long pEvaluatorId);
+
+    // 3. Buscar por degreeWorkId + evaluador + estado de evaluación
+    @Query("""
+        SELECT p FROM #{#entityName} p
+        WHERE p.core.degreeWorkId = :pDegreeWorkId
+          AND p.evaluation.evaluatorId = :pEvaluatorId
+          AND p.evaluation.evaluationStatus = :pEvaluationStatus
+    """)
+    Optional<T> findByDegreeWorkEvaluatorAndEvaluationStatus(
+            Long pDegreeWorkId,
+            Long pEvaluatorId,
+            EnumProcessStatus pEvaluationStatus);
+
+
+    // 4. Buscar por degreeWorkId + estado general
+    @Query("""
+        SELECT p FROM #{#entityName} p
+        WHERE p.core.degreeWorkId = :pDegreeWorkId
+          AND p.generalStatus = :pGeneralStatus
+    """)
+    Optional<T> findByDegreeWorkAndGeneralStatus(Long pDegreeWorkId, EnumDegreeWorkStateType pGeneralStatus);
+
+
+    // 5. Buscar por degreeWorkId + estado interno de evaluación
+    @Query("""
+        SELECT p FROM #{#entityName} p
+        WHERE p.core.degreeWorkId = :pDegreeWorkId
+          AND p.evaluation.evaluationStatus = :pEvaluationStatus
+    """)
+    Optional<T> findByDegreeWorkIdAndEvaluationStatus(Long pDegreeWorkId, EnumProcessStatus pEvaluationStatus);
+
+
+    // 6. Buscar por degreeWorkId + estado general + estado evaluación
+    @Query("""
+        SELECT p FROM #{#entityName} p
+        WHERE p.core.degreeWorkId = :pDegreeWorkId
+          AND p.generalStatus = :pGeneralStatus
+          AND p.evaluation.evaluationStatus = :pEvaluationStatus
+    """)
+    List<T> findByDegreeWorkGeneralAndEvaluationStatus(
+            Long pDegreeWorkId,
+            EnumDegreeWorkStateType pGeneralStatus,
+            EnumProcessStatus pEvaluationStatus);
+
+
+    // 7. Procesos donde NO hay evaluacion (evaluation null)
+    @Query("""
+        SELECT p FROM #{#entityName} p
+        WHERE p.core.degreeWorkId = :pDegreeWorkId
+          AND p.evaluation IS NULL
+    """)
+    Optional<T> findUnassignedByDegreeWorkId(Long pDegreeWorkId);
 
     @Query("""
-            SELECT p FROM #{#entityName} p
-            WHERE p.evaluation.evaluatorId = :pEvaluatorId
-              AND p.evaluation.evaluationStatus = 'PENDING'
-            """)
-    List<T> findPendingEvaluationsByEvaluator(Long pEvaluatorId);
+        SELECT p FROM #{#entityName} p
+        WHERE p.generalStatus = :pStatus
+    """)
+    List<T> findAllByGeneralStatus(@Param("pStatus") EnumDegreeWorkStateType pStatus);
 }
+

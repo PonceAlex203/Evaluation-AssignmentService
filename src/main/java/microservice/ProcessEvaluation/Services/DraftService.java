@@ -1,15 +1,12 @@
 package microservice.ProcessEvaluation.Services;
 
-import microservice.Comunication.Info.EnumDegreeWorkStateType;
-import microservice.Comunication.Info.EvaluationEvent;
+import microservice.ProcessEvaluation.Enums.EnumDegreeWorkStateType;
 import microservice.Comunication.Info.NotificationEvent;
 import microservice.Comunication.Publisher.MessageNotification;
 import microservice.Comunication.Publisher.Publisher;
 import microservice.ProcessEvaluation.Entities.Factories.ProcessFactory;
 import microservice.ProcessEvaluation.Entities.Process.Draft;
 import microservice.ProcessEvaluation.Entities.Process.Evaluation;
-import microservice.ProcessEvaluation.Entities.Process.FormatA;
-import microservice.ProcessEvaluation.Enums.EnumAssignmentStatus;
 import microservice.ProcessEvaluation.Enums.EnumProcessStatus;
 import microservice.ProcessEvaluation.Repositories.DraftRepository;
 import microservice.SecurityComponent.EnumTypeExceptions;
@@ -17,6 +14,7 @@ import microservice.SecurityComponent.ProcessException;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+
 
 @Service
 public class DraftService extends ProcessService<Draft, DraftRepository>{
@@ -28,44 +26,31 @@ public class DraftService extends ProcessService<Draft, DraftRepository>{
         this.formatAService = formatAService;
     }
 
+    protected Draft searchUnassignedByDwIdAndDeptId(Long pDegreeWorkId, Long pDepartmentHeadId){
+        return repository.findUnassignedDraftByDepartmentHeadAndDegreeWorkId(pDepartmentHeadId,pDegreeWorkId).
+                orElseThrow(()->new ProcessException(EnumTypeExceptions.NOT_FOUND));
+    }
+
+    @Override
+    protected void executeUpload(Draft vCurrentProcess) {
+            vCurrentProcess.setGeneralStatus(EnumDegreeWorkStateType.DRAFT_SUBMITTED);
+    }
+
+    @Override
+    public Draft getApprovedByDegreeWorkId(Long pDegreeWorkId) {
+        return repository.findByDegreeWorkAndGeneralStatus(pDegreeWorkId,EnumDegreeWorkStateType.DRAFT_APPROVED).
+                orElse(null);
+    }
+
     @Override
     protected void validateRequirements(Draft pCurrentProcess) {
         if(pCurrentProcess.isExpired())
             throw new ProcessException(EnumTypeExceptions.EXPIRED_TIME);
     }
-
     @Override
     protected void validateBeforeCreate(Draft pNewProcess) {
-        FormatA formatA = formatAService.extractByDegreeWorkId(pNewProcess.getDegreeworkId());
-        if (formatA == null)
-            throw new ProcessException(EnumTypeExceptions.PREVIOUS_PROCESS_NOT_SUMBITTED);
-        if(!formatA.getGeneralEvaluationStatus().equals(EnumProcessStatus.APPROVED))
+        if(formatAService.getApprovedByDegreeWorkId(pNewProcess.getDegreeworkId()) == null)
             throw new ProcessException(EnumTypeExceptions.PREVIOUS_PROCESS_NOT_APPROVED);
-    }
-
-    @Override
-    protected void sendEvaluationStatusChangeEvent(Draft pProcess) {
-        EnumDegreeWorkStateType vNewStatus;
-        switch (pProcess.getGeneralEvaluationStatus()){
-            case PENDING -> vNewStatus = EnumDegreeWorkStateType.DRAFT_SUBMITTED;
-            case PARTIAL -> vNewStatus = EnumDegreeWorkStateType.FIRST_DRAFT_JURY_EVALUATION;
-            case APPROVED -> vNewStatus = EnumDegreeWorkStateType.DRAFT_APPROVED;
-            case REJECTED -> vNewStatus = EnumDegreeWorkStateType.DRAFT_REJECTED;
-            default -> vNewStatus = EnumDegreeWorkStateType.DRAFT;
-        }
-        publisher.sendToModifierQueue(new EvaluationEvent(pProcess.getDegreeworkId(), vNewStatus));
-    }
-    @Override
-    protected void validateEvaluator(Draft pProcess, Long pId) {
-        if (!pProcess.isEvaluator(pId) && !pProcess.isEvaluator2(pId)) {
-            throw new ProcessException(EnumTypeExceptions.NOT_ASSIGNED_TO_SELECTED_PROCESS);
-        }
-        if (pProcess.isEvaluator(pId) && pProcess.isEvaluated()) {
-            throw new ProcessException(EnumTypeExceptions.ALREADY_EVALUATED);
-        }
-        if (pProcess.isEvaluator2(pId) && pProcess.isEvaluated2()) {
-            throw new ProcessException(EnumTypeExceptions.ALREADY_EVALUATED);
-        }
     }
 
     @Override
@@ -74,41 +59,21 @@ public class DraftService extends ProcessService<Draft, DraftRepository>{
             pProcess.getEvaluation().evaluate(pNewStatus,pComment);
         else
             pProcess.getEvaluation2().evaluate(pNewStatus,pComment);
-        pProcess.setGeneralEvaluationStatus(EnumProcessStatus.PARTIAL);
+        pProcess.setGeneralStatus(EnumDegreeWorkStateType.FIRST_DRAFT_JURY_EVALUATION);
         updateGeneralStatus(pProcess);
-    }
-
-    @Override
-    protected void validateCanBeEvaluated(Draft pProcess) {
-        validateCurrentStatus(pProcess);
-
-        if(!pProcess.isFullAssigned())
-            throw new ProcessException(EnumTypeExceptions.NOT_ASSIGNED_PROCESS);
-        if(pProcess.isExpired())
-            throw new ProcessException(EnumTypeExceptions.EXPIRED_TIME);
-        if(pProcess.isBothEvaluated())
-            throw new ProcessException(EnumTypeExceptions.PROCESS_NOT_PENDING);
-    }
-
-    @Override
-    protected void validateBeforeAssigning(Draft pProcess,Long pIdEvaluator) {
-        if(pProcess.isFullAssigned())
-            throw new ProcessException(EnumTypeExceptions.ALREADY_ASSIGNED);
-        if(pProcess.isAnyEvaluator(pIdEvaluator))
-            throw new ProcessException(EnumTypeExceptions.PREVIOUSLY_ASSIGNED);
     }
 
     @Override
     protected void executeAssignment(Draft pProcess, Long pIdEvaluator) {
         Evaluation vNewEvaluation = new Evaluation();
         vNewEvaluation.setEvaluatorId(pIdEvaluator);
-        if(pProcess.isUnassigned()){
+        if(!pProcess.isAssigned()){
             pProcess.setEvaluation(vNewEvaluation);
-            pProcess.setAssignmentStatus(EnumAssignmentStatus.PARTIAL_ASSIGNED);
+            pProcess.setGeneralStatus(EnumDegreeWorkStateType.FIRS_DRAFT_JURY_ASSIGNED);
         }
         else {
             pProcess.setEvaluation2(vNewEvaluation);
-            pProcess.setAssignmentStatus(EnumAssignmentStatus.ASSIGNED);
+            pProcess.setGeneralStatus(EnumDegreeWorkStateType.DRAFT_JURY_ASSIGNED);
         }
     }
 
@@ -116,39 +81,29 @@ public class DraftService extends ProcessService<Draft, DraftRepository>{
         if(!pProcess.isBothEvaluated())
             return;
         if(pProcess.isApproved() && pProcess.isApproved2())
-            pProcess.setGeneralEvaluationStatus(EnumProcessStatus.APPROVED);
+            pProcess.setGeneralStatus(EnumDegreeWorkStateType.DRAFT_APPROVED);
         else if(pProcess.getEvaluation().isRejected() || pProcess.getEvaluation2().isRejected())
-            pProcess.setGeneralEvaluationStatus(EnumProcessStatus.REJECTED);
+            pProcess.setGeneralStatus(EnumDegreeWorkStateType.DRAFT_REJECTED);
     }
 
-    public Draft assignedEvaluators(Long pIdDw, Long pId1, Long pId2){
-        Draft vCurrentDraft = this.findByDegreeWorkId(pIdDw);
+    public Draft assignedEvaluators(Long pIdDw, Long pDepartmentHeadId, Long pId1, Long pId2){
         if(pId1 == pId2)
             throw new ProcessException(EnumTypeExceptions.IDENTICAL_EVALUATORS_IDS);
-        if(vCurrentDraft.isFullAssigned())
-            throw new ProcessException(EnumTypeExceptions.ALREADY_ASSIGNED);
-        if(vCurrentDraft.isEvaluator(pId1) || vCurrentDraft.isEvaluator(pId2))
-            throw new ProcessException(EnumTypeExceptions.PREVIOUSLY_ASSIGNED);
+        Draft vCurrentDraft = searchUnassignedByDwIdAndDeptId(pIdDw,pDepartmentHeadId);
         vCurrentDraft.setEvaluation(new Evaluation(pId1));
         vCurrentDraft.setEvaluation2(new Evaluation(pId2));
-        vCurrentDraft.setAssignmentStatus(EnumAssignmentStatus.ASSIGNED);
-        Draft vUpdatedDraft = this.repository.save(vCurrentDraft);
+        vCurrentDraft.setGeneralStatus(EnumDegreeWorkStateType.DRAFT_JURY_ASSIGNED);
+        Draft vUpdatedDraft = repository.save(vCurrentDraft);
         //
-        sendAssignedsNotification(vUpdatedDraft);
+        sendDoubleAssignedNotification(vUpdatedDraft);
         sendAssignmentStatusChangeEvent(vUpdatedDraft);
         //
         return vUpdatedDraft;
     }
-    private void sendAssignedsNotification(Draft pProcess){
+    private void sendDoubleAssignedNotification(Draft pProcess){
         publisher.sendToNotificationQueue(new NotificationEvent(pProcess.getDegreeworkId()
                 , MessageNotification.processAssigneds(pProcess)));
     }
 
-    public List<Draft> findPendingAssignedByDepartmentHeadId(Long pId){
-        return repository.findByStatusInAndDept(List.of(
-                EnumAssignmentStatus.UNASSIGNED
-                , EnumAssignmentStatus.PARTIAL_ASSIGNED)
-                ,pId);
-    }
-}
 
+}

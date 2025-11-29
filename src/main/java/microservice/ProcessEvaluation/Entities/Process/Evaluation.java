@@ -6,7 +6,6 @@ import jakarta.persistence.Enumerated;
 import jakarta.persistence.Temporal;
 import jakarta.persistence.TemporalType;
 import jakarta.persistence.EnumType;
-
 import microservice.ProcessEvaluation.Enums.EnumProcessStatus;
 
 import java.util.Date;
@@ -33,9 +32,7 @@ public class Evaluation {
         assignmentDate = new Date();
     }
     @JsonIgnore
-    public boolean isEvaluated() {
-        return evaluationStatus != EnumProcessStatus.PENDING;
-    }
+    public boolean isEvaluated() {return evaluationStatus != EnumProcessStatus.PENDING;}
     @JsonIgnore
     public boolean isApproved(){
         return evaluationStatus == EnumProcessStatus.APPROVED;

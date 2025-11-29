@@ -1,11 +1,9 @@
 package microservice.ProcessEvaluation.Services;
 
-import microservice.Comunication.Info.EnumDegreeWorkStateType;
-import microservice.Comunication.Info.EvaluationEvent;
+import microservice.ProcessEvaluation.Enums.EnumDegreeWorkStateType;
 import microservice.Comunication.Publisher.Publisher;
 import microservice.ProcessEvaluation.Entities.Factories.ProcessFactory;
 import microservice.ProcessEvaluation.Entities.Process.FormatA;
-import microservice.ProcessEvaluation.Enums.EnumAssignmentStatus;
 import microservice.ProcessEvaluation.Enums.EnumProcessStatus;
 import microservice.ProcessEvaluation.Repositories.FormatARepository;
 import microservice.SecurityComponent.EnumTypeExceptions;
@@ -23,45 +21,34 @@ public class FormatAService extends ProcessService<FormatA,FormatARepository> {
     }
 
     @Override
-    protected void validateRequirements(FormatA pCurrentProcess) {
-        if(pCurrentProcess.getAttempts() >= maxAttempts) {
-            pCurrentProcess.setGeneralEvaluationStatus(EnumProcessStatus.FAILED);
-        }
+    public FormatA getApprovedByDegreeWorkId(Long pDegreeWorkId) {
+        return repository.findByDegreeWorkAndGeneralStatus(pDegreeWorkId,EnumDegreeWorkStateType.DRAFT).orElse(null);
     }
 
     @Override
-    protected void validateEvaluator(FormatA pProcess, Long pEvaluatorId) {
-        if(pEvaluatorId == null)
-            throw new ProcessException(EnumTypeExceptions.NULL_PARAMETER);
-        if(pEvaluatorId!= 1) //Solo 1 coord, su id es 1.
-            throw new ProcessException(EnumTypeExceptions.NOT_ASSIGNED_TO_SELECTED_PROCESS);
+    protected void validateRequirements(FormatA pCurrentProcess) {
+        if(pCurrentProcess.getAttempts() >= maxAttempts) {
+            pCurrentProcess.setGeneralStatus(EnumDegreeWorkStateType.FORMAT_A_FAILED);
+        }
     }
 
     @Override
     protected void executeEvaluation(FormatA pProcess, Long pIdEvaluator, EnumProcessStatus pNewStatus, String pComment) {
         pProcess.getEvaluation().evaluate(pNewStatus,pComment);
-        pProcess.setGeneralEvaluationStatus(pNewStatus);//Se asigna el mismo estado que a la evaluacion ya que es 1 sola.
-    }
-
-    @Override
-    protected void validateCanBeEvaluated(FormatA pProcess) {
-        this.validateCurrentStatus(pProcess);
-        if(pProcess.getEvaluation() == null)
-            throw new ProcessException(EnumTypeExceptions.NOT_ASSIGNED_PROCESS);
-        if(pProcess.getGeneralEvaluationStatus()!=EnumProcessStatus.PENDING)
-            throw new ProcessException(EnumTypeExceptions.PROCESS_NOT_PENDING);
-    }
-
-    @Override
-    protected void validateBeforeAssigning(FormatA pProcess,Long pIdEvaluator) {
-        if(pProcess.isFullAssigned())
-            throw new ProcessException(EnumTypeExceptions.ALREADY_ASSIGNED);
+        if(pNewStatus == EnumProcessStatus.APPROVED)
+            pProcess.setGeneralStatus(EnumDegreeWorkStateType.DRAFT);
+        else
+            pProcess.setGeneralStatus(EnumDegreeWorkStateType.FORMAT_A_FAILED);
     }
 
     @Override
     protected void executeAssignment(FormatA pProcess, Long pIdEvaluator) {
         pProcess.setEvaluator(pIdEvaluator);
-        pProcess.setAssignmentStatus(EnumAssignmentStatus.ASSIGNED);
+    }
+
+    @Override
+    protected void executeUpload(FormatA vCurrentProcess) {
+        vCurrentProcess.setGeneralStatus(EnumDegreeWorkStateType.FORMAT_A_SUBMITTED);
     }
 
     @Override
@@ -70,16 +57,4 @@ public class FormatAService extends ProcessService<FormatA,FormatARepository> {
             throw new ProcessException(EnumTypeExceptions.NOT_FOUND);
     }
 
-    @Override
-    protected void sendEvaluationStatusChangeEvent(FormatA pProcess) {
-        EnumDegreeWorkStateType vNewStatus;
-        switch (pProcess.getGeneralEvaluationStatus()){
-            case PENDING -> vNewStatus = EnumDegreeWorkStateType.FORMAT_A_SUBMITTED;
-            case APPROVED -> vNewStatus = EnumDegreeWorkStateType.DRAFT;
-            case REJECTED -> vNewStatus = EnumDegreeWorkStateType.FORMAT_A_REJECTED;
-            case FAILED -> vNewStatus = EnumDegreeWorkStateType.FORMAT_A_FAILED;
-            default -> vNewStatus = EnumDegreeWorkStateType.FORMAT_A;
-        }
-        publisher.sendToModifierQueue(new EvaluationEvent(pProcess.getDegreeworkId(), vNewStatus));
-    }
 }

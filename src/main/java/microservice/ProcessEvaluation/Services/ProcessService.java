@@ -1,13 +1,12 @@
 package microservice.ProcessEvaluation.Services;
 
-import microservice.Comunication.Info.EnumDegreeWorkStateType;
 import microservice.Comunication.Info.EvaluationEvent;
 import microservice.Comunication.Info.NotificationEvent;
 import microservice.Comunication.Publisher.MessageNotification;
 import microservice.Comunication.Publisher.Publisher;
-import microservice.ProcessEvaluation.Enums.EnumAssignmentStatus;
-import microservice.ProcessEvaluation.Enums.EnumProcessStatus;
 import microservice.ProcessEvaluation.Entities.Factories.ProcessFactory;
+import microservice.ProcessEvaluation.Entities.Process.Draft;
+import microservice.ProcessEvaluation.Enums.EnumProcessStatus;
 import microservice.SecurityComponent.EnumTypeExceptions;
 import microservice.ProcessEvaluation.Entities.Process.BaseProcess;
 import microservice.ProcessEvaluation.Repositories.ProcessRepository;
@@ -35,50 +34,58 @@ public abstract class ProcessService<T extends BaseProcess, R extends ProcessRep
         this.publisher = pPublisher;
     }
 
-    /**
-     * Finds a process by its ID.
-     *
-     * @param pId the process ID
-     * @return the process if found, null otherwise
-     */
-    protected T findById(Long pId) {
-        return repository.findById(pId).orElse(null);
-    }
-
-    /**
-     * Retrieves all processes with a given generalEvaluationStatus.
-     *
-     * @param pStatus the process generalEvaluationStatus
-     * @return a list of processes with the given generalEvaluationStatus
-     */
-    public List<T> findByStatus(EnumProcessStatus pStatus) {
-        return repository.findByGeneralEvaluationStatus(pStatus);
-    }
-
-    /**
-     * Retrieves all processes from the repository.
-     *
-     * @return a list of all processes
-     */
-    public List<T> findAll() {
+    //General
+    public List<T> getAll() {
         return repository.findAll();
     }
+    
+    public T searchByDegreeWorkId(Long pDegreeworkId) {
+        return repository.findByDegreeWorkId(pDegreeworkId)
+                .orElseThrow(() -> new ProcessException(EnumTypeExceptions.NOT_FOUND));
+    }
 
-    public List<T> findByEvaluatorId(Long pId){
-        return repository.findByEvaluationEvaluatorId(pId);
+    public T getByDegreeWorkId(Long pDegreeWorkId) {
+        return repository.findByDegreeWorkId(pDegreeWorkId).orElse(null);
     }
-    public List<T> findPendingEvaluationsByEvaluator(Long pId){
-        return repository.findPendingEvaluationsByEvaluator(pId);
+
+    //Specific
+
+    public abstract T getApprovedByDegreeWorkId(Long pDegreeWorkId);
+
+    public List<T> getPendingEvaluationByEvaluator(Long pEvaluatorId) {
+        return repository.findByEvaluatorAndEvaluationStatus(pEvaluatorId,EnumProcessStatus.PENDING);
     }
-    /**
-     * Saves a new process after validation.
-     *
-     * @param pNewProcess the process to save
-     * @return the saved process
-     */
-    public T save(T pNewProcess) {
-        if (this.extractByDegreeWorkId(pNewProcess.getDegreeworkId()) != null)
+
+    protected T searchRejectedProcessByDwId(Long pIdDw) {
+        return repository.findByDegreeWorkIdAndEvaluationStatus(pIdDw,EnumProcessStatus.REJECTED).
+                orElseThrow(()->new ProcessException(EnumTypeExceptions.NOT_FOUND));
+    }
+
+    protected T searchAssignedPendingEvaluation(Long pDegreeWorkId, Long pEvaluatorId) {
+        return repository.findByDegreeWorkEvaluatorAndEvaluationStatus(pDegreeWorkId,pEvaluatorId,EnumProcessStatus.PENDING).
+                orElseThrow(()->new ProcessException(EnumTypeExceptions.NOT_FOUND));
+    }
+
+    protected T searchPendingAssignment(Long pDegreeWorkId) {
+        return repository.findUnassignedByDegreeWorkId(pDegreeWorkId).
+                orElseThrow(()->new ProcessException(EnumTypeExceptions.NOT_FOUND));
+    }
+
+    protected abstract void validateBeforeCreate(T pNewProcess);
+    protected abstract void validateRequirements(T pCurrentProcess);
+
+    protected abstract void executeEvaluation(T pProcess, Long pIdEvaluator, EnumProcessStatus pNewStatus, String pComment);
+    protected abstract void executeAssignment(T pProcess, Long pIdEvaluator);
+    protected abstract void executeUpload(T vCurrentProcess);
+
+    ////
+    private void checkExistenceProcess(T pNewProcess){
+        if (this.getByDegreeWorkId(pNewProcess.getDegreeworkId()) != null)
             throw new ProcessException(EnumTypeExceptions.EXISTING_ID);
+    }
+
+    public T save(T pNewProcess) {
+        checkExistenceProcess(pNewProcess);
         validateBeforeCreate(pNewProcess);
         T vNewProcess = repository.save(pNewProcess);
         //
@@ -88,18 +95,11 @@ public abstract class ProcessService<T extends BaseProcess, R extends ProcessRep
         return vNewProcess;
     }
 
-    /**
-     * Reuploads a process if it was rejected, after validation.
-     *
-     * @param pReUploadProcess the updated process
-     * @return the reuploaded process
-     */
     public T reUploadProcess(T pReUploadProcess) {
-        T vCurrentProcess = this.findByDegreeWorkId(pReUploadProcess.getDegreeworkId());
-        validateCanBeResubmitted(vCurrentProcess);
+        T vCurrentProcess = searchRejectedProcessByDwId(pReUploadProcess.getDegreeworkId());
         validateRequirements(vCurrentProcess);
         vCurrentProcess.setUrl(pReUploadProcess.getUrl());
-        vCurrentProcess.setGeneralEvaluationStatus(EnumProcessStatus.PENDING);
+        executeUpload(vCurrentProcess);
         T vNewProcess = repository.save(vCurrentProcess);
         //
         sendUpdatedNotification(vNewProcess);
@@ -107,12 +107,8 @@ public abstract class ProcessService<T extends BaseProcess, R extends ProcessRep
         //
         return vNewProcess;
     }
-
     public T evaluateProcess(Long pIdDw, Long pIdEvaluator, EnumProcessStatus pNewStatus, String pComment){
-        T vProcess = findByDegreeWorkId(pIdDw);
-        validateCanBeEvaluated(vProcess);
-        validateEvaluator(vProcess,pIdEvaluator);
-        validateNewStatus(pNewStatus);
+        T vProcess = searchAssignedPendingEvaluation(pIdDw, pIdEvaluator);
         executeEvaluation(vProcess, pIdEvaluator,pNewStatus, pComment);
         validateRequirements(vProcess);
         T vEvaluatedProcess = repository.save(vProcess);
@@ -123,9 +119,8 @@ public abstract class ProcessService<T extends BaseProcess, R extends ProcessRep
         return vEvaluatedProcess;
     }
 
-    public T assignmentEvaluator(Long pDwId, Long pIdEvaluator) {
-        T vProcess = findByDegreeWorkId(pDwId);
-        validateBeforeAssigning(vProcess, pIdEvaluator);
+    public T assignmentEvaluator(Long pDwId, Long pAssigneeId, Long pIdEvaluator) {
+        T vProcess = searchPendingAssignment(pDwId);
         executeAssignment(vProcess, pIdEvaluator);
         T vUpdatedProcess = repository.save(vProcess);
         //
@@ -134,61 +129,6 @@ public abstract class ProcessService<T extends BaseProcess, R extends ProcessRep
         //
         return vUpdatedProcess;
     }
-    /**
-     * Validates that the process can be resubmitted based on its current generalEvaluationStatus.
-     * A process can only be resubmitted if it is in REJECTED generalEvaluationStatus.
-     *
-     * @param pProcess Process instance to validate
-     * @throws ProcessException if the process cannot be resubmitted due to its current generalEvaluationStatus
-     */
-    private void validateCanBeResubmitted(T pProcess) {
-        validateCurrentStatus(pProcess);
-        if (!pProcess.getGeneralEvaluationStatus().equals(EnumProcessStatus.REJECTED))
-            throw new ProcessException(EnumTypeExceptions.NON_MODIFICABLE_PROCESS);
-    }
-
-    /**
-     * Validates the current process generalEvaluationStatus before performing actions.
-     * Processes in FAILED or APPROVED generalEvaluationStatus cannot be modified or evaluated.
-     *
-     * @param pCurrentProcess Process instance to verify
-     * @throws ProcessException if the process is FAILED or APPROVED
-     */
-    protected void validateCurrentStatus(T pCurrentProcess) {
-        if (pCurrentProcess.getGeneralEvaluationStatus().equals(EnumProcessStatus.FAILED))
-            throw new ProcessException(EnumTypeExceptions.PROCESS_FAILED);
-        if (pCurrentProcess.getGeneralEvaluationStatus().equals(EnumProcessStatus.APPROVED))
-            throw new ProcessException(EnumTypeExceptions.PROCESS_APPROVED);
-    }
-
-    /**
-     * Ensures the new generalEvaluationStatus is valid for update.
-     */
-    private void validateNewStatus(EnumProcessStatus pNewStatus) {
-        if (pNewStatus == null || pNewStatus.equals(EnumProcessStatus.PENDING))
-            throw new ProcessException(EnumTypeExceptions.INVALID_NEW_STATUS);
-        if (pNewStatus.equals(EnumProcessStatus.FAILED))
-            throw new ProcessException(EnumTypeExceptions.INVALID_NEW_STATUS);
-    }
-
-    /**
-     * Finds a process by degree work ID.
-     *
-     * @param pDegreeworkId the degree work ID
-     * @return the found process
-     */
-    public T findByDegreeWorkId(Long pDegreeworkId) {
-        return repository.findByCoreDegreeWorkId(pDegreeworkId)
-                .orElseThrow(() -> new ProcessException(EnumTypeExceptions.NOT_FOUND));
-    }
-
-    /**
-     * Extracts a process by degree work ID, returning null if not found.
-     */
-    public T extractByDegreeWorkId(Long pDegreeWorkId) {
-        return repository.findByCoreDegreeWorkId(pDegreeWorkId).orElse(null);
-    }
-
 
     protected void sendUpdatedNotification(T pProcess) {
         publisher.sendToNotificationQueue(new NotificationEvent(pProcess.getDegreeworkId()
@@ -209,35 +149,13 @@ public abstract class ProcessService<T extends BaseProcess, R extends ProcessRep
                 , MessageNotification.processAssigned(pProcess)));
     }
 
-    protected final void sendEvaluationStatusChangeEvent(T pProcess, EnumDegreeWorkStateType pNewStatus) {
-        publisher.sendToModifierQueue(new EvaluationEvent(pProcess.getDegreeworkId(), pNewStatus));
+    protected void sendEvaluationStatusChangeEvent(T pProcess){
+        publisher.sendToModifierQueue(new EvaluationEvent(pProcess.getDegreeworkId(), pProcess.getGeneralStatus()));
     }
-
-    protected abstract void sendEvaluationStatusChangeEvent(T pProcess);
     protected void sendAssignmentStatusChangeEvent(T pProcess){
-        EnumDegreeWorkStateType vNewStatus;
-        if(pProcess.getAssignmentStatus() == EnumAssignmentStatus.ASSIGNED)
-            vNewStatus = EnumDegreeWorkStateType.DRAFT_JURY_ASSIGNED;
-        else
-            vNewStatus = EnumDegreeWorkStateType.FIRS_DRAFT_JURY_ASSIGNED;
-        publisher.sendToModifierQueue(new EvaluationEvent(pProcess.getDegreeworkId(), vNewStatus));
+        publisher.sendToModifierQueue(new EvaluationEvent(pProcess.getDegreeworkId(), pProcess.getGeneralStatus()));
     }
 
-    /**
-     * Defines validations before creating a process.
-     */
-    protected abstract void validateBeforeCreate(T pNewProcess);
-
-    /**
-     * Defines process-specific requirements validation.
-     */
-    protected abstract void validateRequirements(T pCurrentProcess);
-
-    protected abstract void validateEvaluator(T pProcess, Long pEvaluatorId);
-    protected abstract void executeEvaluation(T pProcess, Long pIdEvaluator,EnumProcessStatus pNewStatus,String pComment);
-    protected abstract void validateCanBeEvaluated(T pProcess);
-    protected abstract void validateBeforeAssigning(T pProcess,Long pIdEvaluator);
-    protected abstract void executeAssignment(T pProcess, Long pIdEvaluator);
 }
 
 

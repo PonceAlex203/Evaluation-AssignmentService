@@ -6,9 +6,9 @@ import microservice.ProcessEvaluation.Dtos.Input.EvaluationDTO;
 import microservice.ProcessEvaluation.Dtos.Input.ProcessDTO;
 import microservice.ProcessEvaluation.Dtos.Output.DraftResponseDTO;
 import microservice.ProcessEvaluation.Dtos.Output.FormatAResponseDTO;
-import microservice.ProcessEvaluation.Enums.EnumProcessStatus;
 import microservice.ProcessEvaluation.Entities.Process.Draft;
 import microservice.ProcessEvaluation.Entities.Process.FormatA;
+import microservice.ProcessEvaluation.Enums.EnumProcessStatus;
 import microservice.ProcessEvaluation.Services.ProcessFacade;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -20,7 +20,6 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.PutMapping;
 
-import java.util.ArrayList;
 import java.util.List;
 @RestController
 @RequestMapping("/process")
@@ -84,7 +83,7 @@ public class ProcessController {
      */
     @GetMapping("/formatA/pending")
     public ResponseEntity<List<FormatAResponseDTO>> getPendingFormatsA() {
-        return ResponseEntity.ok(processFacade.getFormatsAByStatus(EnumProcessStatus.PENDING));
+        return ResponseEntity.ok(processFacade.getPendingFormatsA(1L));
     }
 
     /**
@@ -180,7 +179,7 @@ public class ProcessController {
      */
     @PutMapping("/draft/Assignment")
     public ResponseEntity<DraftResponseDTO> assignmentEvaluator(@RequestBody AssignmentDTO request){
-        DraftResponseDTO vDraft = processFacade.assignmentDraftEvaluator(request);
+        DraftResponseDTO vDraft = processFacade.assignmentDraftEvaluator(3L,request);
         return ResponseEntity.ok(vDraft);
     }
 
@@ -191,7 +190,7 @@ public class ProcessController {
      */
     @PutMapping("/draft/Assignments")
     public ResponseEntity<DraftResponseDTO> assignmentEvaluators(@RequestBody DoubleAssignmentDTO request){
-        DraftResponseDTO vDraft = processFacade.assignmentDraftEvaluators(request);
+        DraftResponseDTO vDraft = processFacade.assignmentDraftEvaluators(3L,request);
         return ResponseEntity.ok(vDraft);
     }
 
@@ -208,7 +207,7 @@ public class ProcessController {
 
     @GetMapping("/draft/assign/pending")
     public ResponseEntity<List<DraftResponseDTO>> getPendingAssignedDraftsByDeptId() {
-        List<DraftResponseDTO> vListPending = processFacade.getPendingAssignedDraftsByDepartmentHeadId(1L);
+        List<DraftResponseDTO> vListPending = processFacade.getPendingAssignedDraftsByDepartmentHeadId(3L);
 
         return ResponseEntity.ok(vListPending);
     }

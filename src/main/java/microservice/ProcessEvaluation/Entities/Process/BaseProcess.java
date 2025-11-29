@@ -1,8 +1,7 @@
 package microservice.ProcessEvaluation.Entities.Process;
 
+import microservice.ProcessEvaluation.Enums.EnumDegreeWorkStateType;
 import microservice.ProcessEvaluation.Entities.Base.CoreProcess;
-import microservice.ProcessEvaluation.Enums.EnumAssignmentStatus;
-import microservice.ProcessEvaluation.Enums.EnumProcessStatus;
 import microservice.ProcessEvaluation.Enums.EnumTypeProcess;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.Entity;
@@ -34,10 +33,8 @@ public abstract class BaseProcess {
     protected String url;
 
     @Enumerated(EnumType.STRING)
-    protected EnumProcessStatus generalEvaluationStatus = EnumProcessStatus.PENDING;
+    protected EnumDegreeWorkStateType generalStatus;
 
-    @Enumerated(EnumType.STRING)
-    protected EnumAssignmentStatus assignmentStatus = EnumAssignmentStatus.UNASSIGNED;
     @Embedded
     protected Evaluation evaluation;
 
@@ -79,19 +76,17 @@ public abstract class BaseProcess {
 
     public void setEvaluation(Evaluation evaluation) {this.evaluation = evaluation;}
 
+    public EnumDegreeWorkStateType getGeneralStatus() {return generalStatus;}
+
+    public void setGeneralStatus(EnumDegreeWorkStateType generalStatus) {this.generalStatus = generalStatus;}
+
     @JsonIgnore
     public Long getDegreeworkId(){
         return core.getDegreeWorkId();
     }
-    public EnumProcessStatus getGeneralEvaluationStatus(){ return this.generalEvaluationStatus; }
-    public void setGeneralEvaluationStatus(EnumProcessStatus pNewStatus) { this.generalEvaluationStatus = pNewStatus;}
     public void setEvaluator(Long pIdEvaluator){evaluation.setEvaluatorId(pIdEvaluator);}
     @JsonIgnore
     public boolean isApproved(){return evaluation != null && evaluation.isApproved();}
-    @JsonIgnore
-    public boolean isFullAssigned() {return assignmentStatus == EnumAssignmentStatus.ASSIGNED; }
-    @JsonIgnore
-    public boolean isUnassigned(){ return assignmentStatus == EnumAssignmentStatus.UNASSIGNED; }
     @JsonIgnore
     public boolean isEvaluated(){return evaluation != null && evaluation.isEvaluated(); }
     @JsonIgnore
@@ -102,8 +97,6 @@ public abstract class BaseProcess {
             return evaluation.getEvaluatorId() == pIdEvaluator;
         else return false;
     }
-    public EnumAssignmentStatus getAssignmentStatus() {return assignmentStatus;}
-    public void setAssignmentStatus(EnumAssignmentStatus assignmentStatus) {this.assignmentStatus = assignmentStatus;}
     // -------------------- Abstract methods --------------------
     @JsonIgnore
     public abstract EnumTypeProcess getTypeProcess();

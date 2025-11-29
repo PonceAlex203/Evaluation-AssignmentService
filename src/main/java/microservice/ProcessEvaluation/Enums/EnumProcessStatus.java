@@ -8,6 +8,5 @@ public enum EnumProcessStatus {
     APPROVED,
     REJECTED,
     PENDING,
-    PARTIAL,
     FAILED,
 }

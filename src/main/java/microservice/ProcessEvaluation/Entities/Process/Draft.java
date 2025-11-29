@@ -1,7 +1,7 @@
 package microservice.ProcessEvaluation.Entities.Process;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import microservice.ProcessEvaluation.Enums.EnumAssignmentStatus;
+import microservice.ProcessEvaluation.Enums.EnumDegreeWorkStateType;
 import microservice.ProcessEvaluation.Enums.EnumTypeProcess;
 import microservice.ProcessEvaluation.Entities.Base.CoreProcess;
 import jakarta.persistence.*;
@@ -75,7 +75,7 @@ public class Draft extends BaseProcess {
         this.evaluation2.setEvaluatorId(pId);
     }
     @JsonIgnore
-    public boolean isPartialAssignment() {return assignmentStatus == EnumAssignmentStatus.PARTIAL_ASSIGNED;}
+    public boolean isPartialAssignment() {return generalStatus == EnumDegreeWorkStateType.FIRS_DRAFT_JURY_ASSIGNED;}
     @JsonIgnore
     public boolean isBothEvaluated(){return isEvaluated() && isEvaluated2();}
     @Override

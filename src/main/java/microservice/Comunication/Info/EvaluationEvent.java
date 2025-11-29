@@ -1,5 +1,7 @@
 package microservice.Comunication.Info;
 
+import microservice.ProcessEvaluation.Enums.EnumDegreeWorkStateType;
+
 import java.io.Serializable;
 
 /**
