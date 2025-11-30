@@ -100,8 +100,8 @@ public class ProcessFacade {
     }
 
 
-    public DraftResponseDTO assignmentDraftEvaluator(Long pDepartmentHeadId, AssignmentDTO pAssignment){
-        Draft vDraft = draftService.assignmentEvaluator(pAssignment.getDegreeWorkId(), pDepartmentHeadId, pAssignment.getEvaluatorId());
+    public DraftResponseDTO assignmentDraftEvaluator(AssignmentDTO pAssignment){
+        Draft vDraft = draftService.assignmentEvaluator(pAssignment.getDegreeWorkId(), pAssignment.getEvaluatorId());
         IMapper<Draft, DraftResponseDTO> vMapper =
                 processMapperFactory.getMapper(EnumTypeProcess.DRAFT);
 

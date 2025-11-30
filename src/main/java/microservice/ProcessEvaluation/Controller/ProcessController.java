@@ -167,9 +167,9 @@ public class ProcessController {
      * @param request the assignment data
      * @return updated draft response
      */
-    @PutMapping("/draft/Assignment/{pId}")
-    public ResponseEntity<DraftResponseDTO> assignmentEvaluator(@PathVariable Long pId,@RequestBody AssignmentDTO request){
-        DraftResponseDTO vDraft = processFacade.assignmentDraftEvaluator(pId,request);
+    @PutMapping("/draft/Assignment")
+    public ResponseEntity<DraftResponseDTO> assignmentEvaluator(@RequestBody AssignmentDTO request){
+        DraftResponseDTO vDraft = processFacade.assignmentDraftEvaluator(request);
         return ResponseEntity.ok(vDraft);
     }
 

@@ -27,20 +27,25 @@ public class FormatAService extends ProcessService<FormatA,FormatARepository> {
 
     @Override
     protected void validateRequirements(FormatA pCurrentProcess) {
-        if(pCurrentProcess.getAttempts() >= maxAttempts) {
+        if(pCurrentProcess.getAttempts() >= maxAttempts){
             pCurrentProcess.setGeneralStatus(EnumDegreeWorkStateType.FORMAT_A_FAILED);
+            pCurrentProcess.getEvaluation().setFailedStatus();
         }
     }
 
     @Override
     protected void executeEvaluation(FormatA pProcess, Long pIdEvaluator, EnumProcessStatus pNewStatus, String pComment) {
         pProcess.getEvaluation().evaluate(pNewStatus,pComment);
-        if(pNewStatus == EnumProcessStatus.APPROVED)
-            pProcess.setGeneralStatus(EnumDegreeWorkStateType.DRAFT);
-        else
-            pProcess.setGeneralStatus(EnumDegreeWorkStateType.FORMAT_A_FAILED);
+        updateInternalData(pProcess);
     }
-
+    private void updateInternalData(FormatA pProcess){
+        if(pProcess.isApproved())
+            pProcess.setGeneralStatus(EnumDegreeWorkStateType.DRAFT);
+        else{
+            pProcess.setGeneralStatus(EnumDegreeWorkStateType.FORMAT_A_REJECTED);
+            pProcess.increaseAttempts();
+        }
+    }
     @Override
     protected void executeAssignment(FormatA pProcess, Long pIdEvaluator) {
         pProcess.setEvaluator(pIdEvaluator);
@@ -49,6 +54,7 @@ public class FormatAService extends ProcessService<FormatA,FormatARepository> {
     @Override
     protected void executeUpload(FormatA vCurrentProcess) {
         vCurrentProcess.setGeneralStatus(EnumDegreeWorkStateType.FORMAT_A_SUBMITTED);
+        vCurrentProcess.getEvaluation().resetFailedEvaluationAttributes();
     }
 
     @Override

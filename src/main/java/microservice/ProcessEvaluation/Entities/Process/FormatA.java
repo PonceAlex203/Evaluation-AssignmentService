@@ -28,10 +28,10 @@ public class FormatA extends BaseProcess {
     }
 
     public byte getAttempts(){ return this.attempts; }
-    public void setAttempts(byte attempts) {
+    private void setAttempts(byte attempts) {
         this.attempts = attempts;
     }
-
+    public void increaseAttempts(){ attempts++; }
     @Override
     public EnumTypeProcess getTypeProcess() {
         return EnumTypeProcess.FORMAT_A;

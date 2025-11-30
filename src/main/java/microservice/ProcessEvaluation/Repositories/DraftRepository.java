@@ -16,7 +16,7 @@ import java.util.Optional;
 @Repository
 public interface DraftRepository extends ProcessRepository<Draft, DraftRepository> {
 
-    // 2. Verificar si un evaluador ya evaluó (por ID y estado) evitar evaluaciones duplicadas.
+
     @Query("""
         SELECT d FROM Draft d
         WHERE d.core.degreeWorkId = :pDegreeWorkId
@@ -32,7 +32,7 @@ public interface DraftRepository extends ProcessRepository<Draft, DraftRepositor
             Long pEvaluatorId,
             EnumProcessStatus pEvaluationStatus);
 
-    // 3. Listar drafts por evaluador + estado (en cualquiera de las dos evaluaciones)
+
     @Query("""
         SELECT d FROM Draft d
         WHERE 

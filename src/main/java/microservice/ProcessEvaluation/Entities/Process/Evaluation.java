@@ -60,6 +60,16 @@ public class Evaluation {
         this.assignmentDate = new Date();
     }
 
+    public void resetFailedEvaluationAttributes(){
+        evaluationStatus = EnumProcessStatus.PENDING;
+        evaluationDate = null;
+        comment = null;
+    }
+
+    public void setFailedStatus(){
+        evaluationStatus = EnumProcessStatus.FAILED;
+    }
+
     public String getComment() { return comment; }
     private void setComment(String comment) { this.comment = comment; }
 

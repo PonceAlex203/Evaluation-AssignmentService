@@ -5,6 +5,7 @@ import microservice.Comunication.Info.NotificationEvent;
 import microservice.Comunication.Publisher.MessageNotification;
 import microservice.Comunication.Publisher.Publisher;
 import microservice.ProcessEvaluation.Entities.Factories.ProcessFactory;
+import microservice.ProcessEvaluation.Enums.EnumDegreeWorkStateType;
 import microservice.ProcessEvaluation.Enums.EnumProcessStatus;
 import microservice.SecurityComponent.EnumTypeExceptions;
 import microservice.ProcessEvaluation.Entities.Process.BaseProcess;
@@ -60,8 +61,8 @@ public abstract class ProcessService<T extends BaseProcess, R extends ProcessRep
                 orElseThrow(()->new ProcessException(EnumTypeExceptions.NOT_FOUND));
     }
 
-    protected T searchAssignedPending(Long pDegreeWorkId, Long pEvaluatorId) {
-        return repository.findByDegreeWorkEvaluatorAndEvaluationStatus(pDegreeWorkId,pEvaluatorId,EnumProcessStatus.PENDING).
+    protected T searchAssignedBy(Long pDegreeWorkId, Long pEvaluatorId) {
+        return repository.findByDegreeWorkEvaluatorAndEvaluationStatus(pDegreeWorkId,pEvaluatorId, EnumProcessStatus.PENDING).
                 orElseThrow(()->new ProcessException(EnumTypeExceptions.NOT_FOUND));
     }
 
@@ -107,7 +108,7 @@ public abstract class ProcessService<T extends BaseProcess, R extends ProcessRep
         return vNewProcess;
     }
     public T evaluateProcess(Long pIdDw, Long pIdEvaluator, EnumProcessStatus pNewStatus, String pComment){
-        T vProcess = searchAssignedPending(pIdDw, pIdEvaluator);
+        T vProcess = searchAssignedBy(pIdDw, pIdEvaluator);
         executeEvaluation(vProcess, pIdEvaluator,pNewStatus, pComment);
         validateRequirements(vProcess);
         T vEvaluatedProcess = repository.save(vProcess);
@@ -118,7 +119,7 @@ public abstract class ProcessService<T extends BaseProcess, R extends ProcessRep
         return vEvaluatedProcess;
     }
 
-    public T assignmentEvaluator(Long pDwId, Long pAssigneeId, Long pIdEvaluator) {
+    public T assignmentEvaluator(Long pDwId, Long pIdEvaluator) {
         T vProcess = searchPendingAssignment(pDwId);
         executeAssignment(vProcess, pIdEvaluator);
         T vUpdatedProcess = repository.save(vProcess);
