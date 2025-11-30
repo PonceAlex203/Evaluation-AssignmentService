@@ -19,8 +19,6 @@ import java.util.Date;
         uniqueConstraints = @UniqueConstraint(columnNames = "degreework_id")
 )
 public class Draft extends BaseProcess {
-    private Long departmentHeadId = 2L;
-
     @Temporal(TemporalType.TIMESTAMP)
     private Date deadline;
 
@@ -66,13 +64,6 @@ public class Draft extends BaseProcess {
         this.evaluation2 = evaluation2;
     }
 
-    public Long getDepartmentHeadId() {
-        return departmentHeadId;
-    }
-
-    public void setDepartmentHeadId(Long departmentHeadId) {
-        this.departmentHeadId = departmentHeadId;
-    }
     public void setEvaluator2(Long pId){
         this.evaluation2.setEvaluatorId(pId);
     }

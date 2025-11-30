@@ -38,7 +38,7 @@ public class FormatA extends BaseProcess {
     }
 
     private void assignDefaultEvaluator(){
-        this.evaluation = new Evaluation(1L);
+        this.evaluation = new Evaluation(null);
         this.generalStatus = EnumDegreeWorkStateType.FORMAT_A_SUBMITTED;
     }
 }

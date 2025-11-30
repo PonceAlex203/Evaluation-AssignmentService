@@ -83,7 +83,7 @@ public class ProcessController {
      */
     @GetMapping("/formatA/pending")
     public ResponseEntity<List<FormatAResponseDTO>> getPendingFormatsA() {
-        return ResponseEntity.ok(processFacade.getPendingFormatsA(1L));
+        return ResponseEntity.ok(processFacade.getPendingFormatsA());
     }
 
     /**
@@ -94,7 +94,7 @@ public class ProcessController {
     @PutMapping("/formatA/evaluate/approve")
     public ResponseEntity<FormatAResponseDTO> approveFormatA(@RequestBody EvaluationDTO request) {
         FormatAResponseDTO vEvaluatedFormatA = processFacade.evaluateFormatA(1L, request,EnumProcessStatus.APPROVED);
-        return ResponseEntity.ok(vEvaluatedFormatA);
+        return ResponseEntity.ok(vEvaluatedFormatA);                        //Enviar id del Jwt
     }
 
     /**
@@ -105,7 +105,7 @@ public class ProcessController {
     @PutMapping("/formatA/evaluate/reject")
     public ResponseEntity<FormatAResponseDTO> rejectFormatA(@RequestBody EvaluationDTO request) {
         FormatAResponseDTO vEvaluatedFormatA = processFacade.evaluateFormatA(1L, request,EnumProcessStatus.REJECTED);
-        return ResponseEntity.ok(vEvaluatedFormatA);
+        return ResponseEntity.ok(vEvaluatedFormatA);                        //Enviar id del Jwt
     }
 
     //Draft
@@ -139,16 +139,15 @@ public class ProcessController {
         return ResponseEntity.ok(draft);
     }
 
-
     /**
      * Approves a draft document
      * @param request the evaluation data
      * @return approved draft response
      */
-    @PutMapping("/draft/evaluate/approve/{pId}")
-    public ResponseEntity<DraftResponseDTO> approveDraft(@PathVariable Long pId, @RequestBody EvaluationDTO request) {
-        DraftResponseDTO vEvaluatedDraft = processFacade.evaluateDraft(pId,request, EnumProcessStatus.APPROVED);
-        return ResponseEntity.ok(vEvaluatedDraft);
+    @PutMapping("/draft/evaluate/approve")
+    public ResponseEntity<DraftResponseDTO> approveDraft(@RequestBody EvaluationDTO request) {
+        DraftResponseDTO vEvaluatedDraft = processFacade.evaluateDraft(1L,request, EnumProcessStatus.APPROVED);
+        return ResponseEntity.ok(vEvaluatedDraft);                      //Enviar id del Jwt
     }
 
     /**
@@ -156,10 +155,10 @@ public class ProcessController {
      * @param request the evaluation data
      * @return rejected draft response
      */
-    @PutMapping("/draft/evaluate/reject/{pId}")
-    public ResponseEntity<DraftResponseDTO> rejectDraft(@PathVariable Long pId,@RequestBody EvaluationDTO request) {
-        DraftResponseDTO vEvaluatedDraft = processFacade.evaluateDraft(pId, request, EnumProcessStatus.REJECTED);
-        return ResponseEntity.ok(vEvaluatedDraft);
+    @PutMapping("/draft/evaluate/reject/")
+    public ResponseEntity<DraftResponseDTO> rejectDraft(@RequestBody EvaluationDTO request) {
+        DraftResponseDTO vEvaluatedDraft = processFacade.evaluateDraft(1L,request, EnumProcessStatus.REJECTED);
+        return ResponseEntity.ok(vEvaluatedDraft);                     //Enviar id del Jwt
     }
 
     /**
@@ -178,9 +177,9 @@ public class ProcessController {
      * @param request the multiple assignment data
      * @return updated draft response
      */
-    @PutMapping("/draft/Assignments/{pId}")
-    public ResponseEntity<DraftResponseDTO> assignmentEvaluators(@PathVariable Long pId, @RequestBody DoubleAssignmentDTO request){
-        DraftResponseDTO vDraft = processFacade.assignmentDraftEvaluators(pId,request);
+    @PutMapping("/draft/Assignments")
+    public ResponseEntity<DraftResponseDTO> assignmentEvaluators( @RequestBody DoubleAssignmentDTO request){
+        DraftResponseDTO vDraft = processFacade.assignmentDraftEvaluators(request);
         return ResponseEntity.ok(vDraft);
     }
 
@@ -188,17 +187,15 @@ public class ProcessController {
      * Retrieves drafts in pending, partial, and assigned generalEvaluationStatus
      * @return combined list of drafts in various states
      */
-    @GetMapping("/draft/evaluate/pending/{pId}")
-    public ResponseEntity<List<DraftResponseDTO>> getPendingEvaluateDraftsByEvluatorId(@PathVariable Long pId) {
-        List<DraftResponseDTO> vListPending = processFacade.getPendingEvaluateDrafts(pId);
-
+    @GetMapping("/draft/evaluate/pending")
+    public ResponseEntity<List<DraftResponseDTO>> getPendingEvaluateDraftsByEvluatorId() {
+        List<DraftResponseDTO> vListPending = processFacade.getPendingEvaluateDrafts(1L);//Enviar id del Jwt
         return ResponseEntity.ok(vListPending);
     }
 
-    @GetMapping("/draft/assign/pending/{pId}")
-    public ResponseEntity<List<DraftResponseDTO>> getPendingAssignedDraftsByDeptId(@PathVariable Long pId) {
-        List<DraftResponseDTO> vListPending = processFacade.getPendingAssignedDrafts(pId);
-
+    @GetMapping("/draft/assign/pending")
+    public ResponseEntity<List<DraftResponseDTO>> getPendingAssignedDraftsByDeptId() {
+        List<DraftResponseDTO> vListPending = processFacade.getPendingAssignedDrafts();
         return ResponseEntity.ok(vListPending);
     }
 

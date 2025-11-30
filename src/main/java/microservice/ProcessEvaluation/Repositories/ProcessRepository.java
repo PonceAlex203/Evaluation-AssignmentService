@@ -27,14 +27,12 @@ public interface ProcessRepository<T extends BaseProcess, R extends ProcessRepos
     """)
     Optional<T> findBy(Long pDegreeWorkId);
 
-
     // 2. Buscar procesos por evaluador + estado de evaluacion
     @Query("""
         SELECT p FROM #{#entityName} p
-        WHERE p.evaluation.evaluatorId = :pEvaluatorId
-          AND p.evaluation.evaluationStatus = :pEvaluationStatus
+        WHERE p.evaluation.evaluationStatus = :pEvaluationStatus
     """)
-    List<T> findByEvaluatorAndEvaluationStatus(Long pEvaluatorId, EnumProcessStatus pEvaluationStatus);
+    List<T> findByEvaluationStatus(EnumProcessStatus pEvaluationStatus);
 
     // 4. Buscar por degreeWorkId + estado general
     @Query("""
@@ -43,14 +41,6 @@ public interface ProcessRepository<T extends BaseProcess, R extends ProcessRepos
           AND p.generalStatus = :pGeneralStatus
     """)
     Optional<T> findByDegreeWorkAndGeneralStatus(Long pDegreeWorkId, EnumDegreeWorkStateType pGeneralStatus);
-
-    @Query(""" 
-    SELECT p FROM #{#entityName} p
-     WHERE p.core.degreeWorkId = :pDegreeWorkId 
-     AND p.evaluation.evaluatorId = :pEvaluatorId 
-     AND p.evaluation.evaluationStatus = :pEvaluationStatus 
-     """)
-    Optional<T> findByDegreeWorkEvaluatorAndEvaluationStatus( Long pDegreeWorkId, Long pEvaluatorId, EnumProcessStatus pEvaluationStatus);
 
     // 5. Buscar por degreeWorkId + estado interno de evaluación
     @Query("""

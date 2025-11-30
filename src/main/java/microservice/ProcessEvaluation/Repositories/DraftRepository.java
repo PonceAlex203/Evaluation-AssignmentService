@@ -18,20 +18,21 @@ public interface DraftRepository extends ProcessRepository<Draft, DraftRepositor
 
 
     @Query("""
-        SELECT d FROM Draft d
-        WHERE d.core.degreeWorkId = :pDegreeWorkId
-          AND (
-               (d.evaluation.evaluatorId = :pEvaluatorId
-                AND d.evaluation.evaluationStatus = :pEvaluationStatus)
-            OR (d.evaluation2.evaluatorId = :pEvaluatorId
-                AND d.evaluation2.evaluationStatus = :pEvaluationStatus)
+    SELECT d FROM Draft d
+    WHERE d.core.degreeWorkId = :pDegreeWorkId
+      AND d.evaluation IS NOT NULL
+      AND d.evaluation2 IS NOT NULL
+      AND (
+            (d.evaluation.evaluatorId = :pEvaluatorId
+             AND d.evaluation.evaluationStatus = :pEvaluationStatus)
+         OR (d.evaluation2.evaluatorId = :pEvaluatorId
+             AND d.evaluation2.evaluationStatus = :pEvaluationStatus)
           )
     """)
-    Optional<Draft> findEvaluator(
+    Optional<Draft> findPendingEvaluate(
             Long pDegreeWorkId,
             Long pEvaluatorId,
             EnumProcessStatus pEvaluationStatus);
-
 
     @Query("""
         SELECT d FROM Draft d
@@ -48,14 +49,11 @@ public interface DraftRepository extends ProcessRepository<Draft, DraftRepositor
 
     @Query("""
     SELECT d FROM Draft d
-    WHERE d.departmentHeadId = :pDepartmentHeadId
-      AND d.core.degreeWorkId = :pDegreeWorkId
+    WHERE d.core.degreeWorkId = :pDegreeWorkId
       AND (d.evaluation IS NULL OR d.evaluation.evaluatorId IS NULL)
       AND (d.evaluation2 IS NULL OR d.evaluation2.evaluatorId IS NULL)
-""")
-    Optional<Draft> findUnassignedDraft(
-            Long pDepartmentHeadId,
-            Long pDegreeWorkId);
+    """)
+    Optional<Draft> findUnassignedDraft(Long pDegreeWorkId);
 
     @Query("""
     SELECT d FROM Draft d
@@ -69,15 +67,17 @@ public interface DraftRepository extends ProcessRepository<Draft, DraftRepositor
 
     @Query("""
     SELECT d FROM Draft d
-    WHERE d.departmentHeadId = :pDepartmentHeadId
-      AND (
-            d.evaluation IS NULL 
-            OR d.evaluation.evaluatorId IS NULL
-            OR d.evaluation2 IS NULL
-            OR d.evaluation2.evaluatorId IS NULL
-          )
-""")
-    List<Draft> findPendingAssignmentBy(Long pDepartmentHeadId);
+    WHERE d.evaluation IS NULL 
+       OR d.evaluation2 IS NULL
+    """)
+    List<Draft> findPendingAssignment();
 
+    @Override
+    @Query("""
+        SELECT p FROM #{#entityName} p
+        WHERE p.evaluation.evaluationStatus = :pEvaluationStatus
+        OR p.evaluation2.evaluationStatus = :pEvaluationStatus
+    """)
+    List<Draft> findByEvaluationStatus(EnumProcessStatus pEvaluationStatus);
 
 }

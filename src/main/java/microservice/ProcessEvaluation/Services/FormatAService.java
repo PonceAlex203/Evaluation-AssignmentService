@@ -1,5 +1,6 @@
 package microservice.ProcessEvaluation.Services;
 
+import microservice.ProcessEvaluation.Entities.Process.Evaluation;
 import microservice.ProcessEvaluation.Enums.EnumDegreeWorkStateType;
 import microservice.Comunication.Publisher.Publisher;
 import microservice.ProcessEvaluation.Entities.Factories.ProcessFactory;
@@ -10,6 +11,7 @@ import microservice.SecurityComponent.EnumTypeExceptions;
 import microservice.SecurityComponent.ProcessException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+
 
 @Service
 public class FormatAService extends ProcessService<FormatA,FormatARepository> {
@@ -22,7 +24,13 @@ public class FormatAService extends ProcessService<FormatA,FormatARepository> {
 
     @Override
     public FormatA getApproved(Long pDegreeWorkId) {
-        return repository.findByDegreeWorkAndGeneralStatus(pDegreeWorkId,EnumDegreeWorkStateType.DRAFT).orElse(null);
+        return repository.findByDegreeWorkAndGeneralStatus(pDegreeWorkId, EnumDegreeWorkStateType.DRAFT).orElse(null);
+    }
+
+    @Override
+    protected FormatA searchPendingEvaluate(Long pDegreeWorkId, Long pEvaluatorId) {
+        return repository.findByDegreeWorkIdAndEvaluationStatus(pDegreeWorkId,EnumProcessStatus.PENDING).
+                orElseThrow(()->new ProcessException(EnumTypeExceptions.NOT_FOUND));
     }
 
     @Override
@@ -35,6 +43,7 @@ public class FormatAService extends ProcessService<FormatA,FormatARepository> {
 
     @Override
     protected void executeEvaluation(FormatA pProcess, Long pIdEvaluator, EnumProcessStatus pNewStatus, String pComment) {
+        pProcess.getEvaluation().addOnlyEvaluator(pIdEvaluator);
         pProcess.getEvaluation().evaluate(pNewStatus,pComment);
         updateInternalData(pProcess);
     }
@@ -59,8 +68,6 @@ public class FormatAService extends ProcessService<FormatA,FormatARepository> {
 
     @Override
     protected void validateBeforeCreate(FormatA pNewProcess) {
-        if(pNewProcess == null)
-            throw new ProcessException(EnumTypeExceptions.NOT_FOUND);
+        pNewProcess.setEvaluation(new Evaluation(null));
     }
-
 }

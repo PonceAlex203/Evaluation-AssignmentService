@@ -18,8 +18,6 @@ public class FormatABuilder implements IProcessBuilder<FormatA, ProcessDTO> {
     public FormatA buildFromDTO(ProcessDTO pDto) {
         CoreProcess vNewProcess = new CoreProcess(pDto.getDegreeWorkId());
         FormatA vFormatA = new FormatA(vNewProcess, pDto.getUrl());
-        vFormatA.setEvaluation(new Evaluation());
-        vFormatA.getEvaluation().setEvaluatorId(1L);//Referencia al coordinador.
         return vFormatA;
     }
 }

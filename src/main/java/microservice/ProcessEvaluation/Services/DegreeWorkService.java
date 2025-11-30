@@ -19,7 +19,7 @@ public class DegreeWorkService {
     public void saveDegreeWorkId(Long pDegreeWorkId) {
         if (degreeWorkRepository.existsById(pDegreeWorkId))
             throw new ProcessException(EnumTypeExceptions.DEGREEWORKID_EXISTING);
-        degreeWorkRepository.save(new DegreeWorkIds(pDegreeWorkId));
+        else degreeWorkRepository.save(new DegreeWorkIds(pDegreeWorkId));
     }
 
     public void validateExistingId(Long pDegreeWorkId) {

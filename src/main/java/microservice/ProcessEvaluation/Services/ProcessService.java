@@ -5,7 +5,6 @@ import microservice.Comunication.Info.NotificationEvent;
 import microservice.Comunication.Publisher.MessageNotification;
 import microservice.Comunication.Publisher.Publisher;
 import microservice.ProcessEvaluation.Entities.Factories.ProcessFactory;
-import microservice.ProcessEvaluation.Enums.EnumDegreeWorkStateType;
 import microservice.ProcessEvaluation.Enums.EnumProcessStatus;
 import microservice.SecurityComponent.EnumTypeExceptions;
 import microservice.ProcessEvaluation.Entities.Process.BaseProcess;
@@ -34,42 +33,16 @@ public abstract class ProcessService<T extends BaseProcess, R extends ProcessRep
         this.publisher = pPublisher;
     }
 
-    //General
+    //
     public List<T> getAll() {
         return repository.findAll();
     }
-    
-    public T search(Long pDegreeworkId) {
-        return repository.findBy(pDegreeworkId)
-                .orElseThrow(() -> new ProcessException(EnumTypeExceptions.NOT_FOUND));
-    }
-
-    public T getBy(Long pDegreeWorkId) {
-        return repository.findBy(pDegreeWorkId).orElse(null);
-    }
-
-    //Specific
+    public T getBy(Long pDegreeWorkId) {return repository.findBy(pDegreeWorkId).orElse(null);}
+    public List<T> getPendingEvaluations() {return repository.findByEvaluationStatus(EnumProcessStatus.PENDING);}
 
     public abstract T getApproved(Long pDegreeWorkId);
 
-    public List<T> getPendingEvaluations(Long pEvaluatorId) {
-        return repository.findByEvaluatorAndEvaluationStatus(pEvaluatorId,EnumProcessStatus.PENDING);
-    }
-
-    protected T searchRejectedProcess(Long pIdDw) {
-        return repository.findByDegreeWorkIdAndEvaluationStatus(pIdDw,EnumProcessStatus.REJECTED).
-                orElseThrow(()->new ProcessException(EnumTypeExceptions.NOT_FOUND));
-    }
-
-    protected T searchAssignedBy(Long pDegreeWorkId, Long pEvaluatorId) {
-        return repository.findByDegreeWorkEvaluatorAndEvaluationStatus(pDegreeWorkId,pEvaluatorId, EnumProcessStatus.PENDING).
-                orElseThrow(()->new ProcessException(EnumTypeExceptions.NOT_FOUND));
-    }
-
-    protected T searchPendingAssignment(Long pDegreeWorkId) {
-        return repository.findUnassignedBy(pDegreeWorkId).
-                orElseThrow(()->new ProcessException(EnumTypeExceptions.NOT_FOUND));
-    }
+    protected abstract T searchPendingEvaluate(Long pDegreeWorkId, Long pEvaluatorId);
 
     protected abstract void validateBeforeCreate(T pNewProcess);
     protected abstract void validateRequirements(T pCurrentProcess);
@@ -78,9 +51,22 @@ public abstract class ProcessService<T extends BaseProcess, R extends ProcessRep
     protected abstract void executeAssignment(T pProcess, Long pIdEvaluator);
     protected abstract void executeUpload(T vCurrentProcess);
 
-    ////
+    public T searchBy(Long pDegreeworkId) {
+        return repository.findBy(pDegreeworkId).orElseThrow(() -> new ProcessException(EnumTypeExceptions.NOT_FOUND));
+    }
+
+    protected T searchRejectedProcess(Long pIdDw) {
+        return repository.findByDegreeWorkIdAndEvaluationStatus(pIdDw,EnumProcessStatus.REJECTED).
+                orElseThrow(()->new ProcessException(EnumTypeExceptions.NON_MODIFICABLE_PROCESS));
+    }
+
+    protected T searchPendingAssignment(Long pDegreeWorkId) {
+        return repository.findUnassignedBy(pDegreeWorkId).
+                orElseThrow(()->new ProcessException(EnumTypeExceptions.NOT_FOUND));
+    }
+
     private void checkExistenceProcess(T pNewProcess){
-        if (this.getBy(pNewProcess.getDegreeworkId()) != null)
+        if (getBy(pNewProcess.getDegreeworkId()) != null)
             throw new ProcessException(EnumTypeExceptions.EXISTING_ID);
     }
 
@@ -88,10 +74,8 @@ public abstract class ProcessService<T extends BaseProcess, R extends ProcessRep
         checkExistenceProcess(pNewProcess);
         validateBeforeCreate(pNewProcess);
         T vNewProcess = repository.save(pNewProcess);
-        //
         sendSubmittedNotification(vNewProcess);
         sendEvaluationStatusChangeEvent(vNewProcess);
-        //
         return vNewProcess;
     }
 
@@ -101,21 +85,17 @@ public abstract class ProcessService<T extends BaseProcess, R extends ProcessRep
         vCurrentProcess.setUrl(pReUploadProcess.getUrl());
         executeUpload(vCurrentProcess);
         T vNewProcess = repository.save(vCurrentProcess);
-        //
         sendUpdatedNotification(vNewProcess);
         sendEvaluationStatusChangeEvent(vNewProcess);
-        //
         return vNewProcess;
     }
     public T evaluateProcess(Long pIdDw, Long pIdEvaluator, EnumProcessStatus pNewStatus, String pComment){
-        T vProcess = searchAssignedBy(pIdDw, pIdEvaluator);
+        T vProcess = searchPendingEvaluate(pIdDw, pIdEvaluator);
         executeEvaluation(vProcess, pIdEvaluator,pNewStatus, pComment);
         validateRequirements(vProcess);
         T vEvaluatedProcess = repository.save(vProcess);
-        //
         sendEvaluationStatusChangeEvent(vEvaluatedProcess);
         sendEvaluatedNotification(vEvaluatedProcess);
-        //
         return vEvaluatedProcess;
     }
 
@@ -123,13 +103,12 @@ public abstract class ProcessService<T extends BaseProcess, R extends ProcessRep
         T vProcess = searchPendingAssignment(pDwId);
         executeAssignment(vProcess, pIdEvaluator);
         T vUpdatedProcess = repository.save(vProcess);
-        //
         sendAssignmentStatusChangeEvent(vProcess);
         sendAssignedNotification(vUpdatedProcess);
-        //
         return vUpdatedProcess;
     }
 
+    //Event and notification sender.
     protected void sendUpdatedNotification(T pProcess) {
         publisher.sendToNotificationQueue(new NotificationEvent(pProcess.getDegreeworkId()
                 , MessageNotification.processUpdated(pProcess)));

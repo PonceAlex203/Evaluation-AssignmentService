@@ -75,4 +75,6 @@ public class Evaluation {
 
     public EnumProcessStatus getEvaluationStatus() { return evaluationStatus; }
     private void setEvaluationStatus(EnumProcessStatus evaluationStatus) { this.evaluationStatus = evaluationStatus; }
+
+    public void addOnlyEvaluator(Long pEvaluatorId){ evaluatorId = pEvaluatorId;}
 }

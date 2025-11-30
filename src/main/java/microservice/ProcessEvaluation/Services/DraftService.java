@@ -26,14 +26,14 @@ public class DraftService extends ProcessService<Draft, DraftRepository>{
         this.formatAService = formatAService;
     }
 
-    protected Draft searchUnassignedBy(Long pDegreeWorkId, Long pDepartmentHeadId){
-        return repository.findUnassignedDraft(pDepartmentHeadId,pDegreeWorkId).
+    protected Draft searchUnassignedBy(Long pDegreeWorkId){
+        return repository.findUnassignedDraft(pDegreeWorkId).
                 orElseThrow(()-> new ProcessException(EnumTypeExceptions.NOT_FOUND));
     }
 
     @Override
-    protected Draft searchAssignedBy(Long pDegreeWorkId, Long pEvaluatorId) {
-        return repository.findEvaluator(pDegreeWorkId,pEvaluatorId, EnumProcessStatus.PENDING).
+    protected Draft searchPendingEvaluate(Long pDegreeWorkId, Long pEvaluatorId) {
+        return repository.findPendingEvaluate(pDegreeWorkId,pEvaluatorId, EnumProcessStatus.PENDING).
                 orElseThrow(()->new ProcessException(EnumTypeExceptions.NOT_FOUND));
     }
     @Override
@@ -48,9 +48,7 @@ public class DraftService extends ProcessService<Draft, DraftRepository>{
     public List<Draft> getPendingEvaluate(Long pEvaluatorId){
         return repository.findAllBy(pEvaluatorId, EnumProcessStatus.PENDING);
     }
-    public List<Draft> getPendingAssignment(Long pDepartmentHead){
-        return repository.findPendingAssignmentBy(pDepartmentHead);
-    }
+    public List<Draft> getPendingAssignment(){return repository.findPendingAssignment();}
 
     @Override
     protected void executeUpload(Draft vCurrentProcess) {
@@ -110,10 +108,10 @@ public class DraftService extends ProcessService<Draft, DraftRepository>{
             pProcess.setGeneralStatus(EnumDegreeWorkStateType.DRAFT_REJECTED);
     }
 
-    public Draft assignedEvaluators(Long pIdDw, Long pDepartmentHeadId, Long pId1, Long pId2){
+    public Draft assignedEvaluators(Long pIdDw, Long pId1, Long pId2){
         if(pId1 == pId2)
             throw new ProcessException(EnumTypeExceptions.IDENTICAL_EVALUATORS_IDS);
-        Draft vCurrentDraft = searchUnassignedBy(pIdDw,pDepartmentHeadId);
+        Draft vCurrentDraft = searchUnassignedBy(pIdDw);
         vCurrentDraft.setEvaluation(new Evaluation(pId1));
         vCurrentDraft.setEvaluation2(new Evaluation(pId2));
         vCurrentDraft.setGeneralStatus(EnumDegreeWorkStateType.DRAFT_JURY_ASSIGNED);
@@ -128,6 +126,5 @@ public class DraftService extends ProcessService<Draft, DraftRepository>{
         publisher.sendToNotificationQueue(new NotificationEvent(pProcess.getDegreeworkId()
                 , MessageNotification.processAssigneds(pProcess)));
     }
-
 
 }
