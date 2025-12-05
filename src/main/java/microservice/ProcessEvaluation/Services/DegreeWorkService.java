@@ -13,7 +13,7 @@ public class DegreeWorkService {
 
     public DegreeWorkService(DegreeWorkRepository existingRepo) {
         this.degreeWorkRepository = existingRepo;
-        initializr();
+        //initializr();
     }
 
     public void saveDegreeWorkId(Long pDegreeWorkId) {
