@@ -5,10 +5,6 @@ package microservice.ProcessEvaluation.Enums;
  */
 public enum EnumDegreeWorkStateType {
     /**
-     * Director is creating Format A
-     */
-    FORMAT_A,
-    /**
      * Format A submitted for review
      */
     FORMAT_A_SUBMITTED,

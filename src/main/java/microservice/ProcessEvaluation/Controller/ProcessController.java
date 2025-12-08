@@ -185,7 +185,7 @@ public class ProcessController {
 
     /**
      * Retrieves drafts in pending, partial, and assigned generalEvaluationStatus
-     * @return combined list of drafts in various states
+     * @return list of drafts in pending status
      */
     @GetMapping("/draft/evaluate/pending")
     public ResponseEntity<List<DraftResponseDTO>> getPendingEvaluateDraftsByEvluatorId() {
@@ -193,6 +193,10 @@ public class ProcessController {
         return ResponseEntity.ok(vListPending);
     }
 
+    /**
+     * Retrieves pending drafts to assign by the department head
+     * @return list of pending drafts to be evaluated according to the requester's id
+     */
     @GetMapping("/draft/assign/pending")
     public ResponseEntity<List<DraftResponseDTO>> getPendingAssignedDraftsByDeptId() {
         List<DraftResponseDTO> vListPending = processFacade.getPendingAssignedDrafts();

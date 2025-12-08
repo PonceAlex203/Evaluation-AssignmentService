@@ -9,32 +9,48 @@ import org.springframework.stereotype.Repository;
 
 import java.util.List;
 import java.util.Optional;
-
 /**
- * Generic repository interface for managing {@link BaseProcess} entities.
- * Provides basic database operations and custom query methods for process management.
+ * Generic repository for managing process entities.
+ * Provides reusable queries for all process types.
  *
- * @param <T> the type of process that extends {@link BaseProcess}
+ * @param <T> the process type
+ * @param <R> the concrete repository type
  */
 @Repository
 public interface ProcessRepository<T extends BaseProcess, R extends ProcessRepository<T, R>>
         extends JpaRepository<T, Long> {
 
-    // 1. Buscar proceso por DegreeWorkId
+    /**
+     * Retrieves a process by its degree work identifier.
+     *
+     * @param pDegreeWorkId the degree work identifier
+     * @return an optional containing the process if found
+     */
     @Query("""
         SELECT p FROM #{#entityName} p
         WHERE p.core.degreeWorkId = :pDegreeWorkId
     """)
     Optional<T> findBy(Long pDegreeWorkId);
 
-    // 2. Buscar procesos por evaluador + estado de evaluacion
+    /**
+     * Retrieves processes filtered by evaluation status.
+     *
+     * @param pEvaluationStatus the evaluation status
+     * @return a list of matching processes
+     */
     @Query("""
         SELECT p FROM #{#entityName} p
         WHERE p.evaluation.evaluationStatus = :pEvaluationStatus
     """)
     List<T> findByEvaluationStatus(EnumProcessStatus pEvaluationStatus);
 
-    // 4. Buscar por degreeWorkId + estado general
+    /**
+     * Retrieves a process filtered by degree work identifier and general status.
+     *
+     * @param pDegreeWorkId the degree work identifier
+     * @param pGeneralStatus the general process status
+     * @return an optional containing the process
+     */
     @Query("""
         SELECT p FROM #{#entityName} p
         WHERE p.core.degreeWorkId = :pDegreeWorkId
@@ -42,7 +58,13 @@ public interface ProcessRepository<T extends BaseProcess, R extends ProcessRepos
     """)
     Optional<T> findByDegreeWorkAndGeneralStatus(Long pDegreeWorkId, EnumDegreeWorkStateType pGeneralStatus);
 
-    // 5. Buscar por degreeWorkId + estado interno de evaluación
+    /**
+     * Retrieves a process filtered by degree work identifier and internal evaluation status.
+     *
+     * @param pDegreeWorkId the degree work identifier
+     * @param pEvaluationStatus the evaluation status
+     * @return an optional containing the process
+     */
     @Query("""
         SELECT p FROM #{#entityName} p
         WHERE p.core.degreeWorkId = :pDegreeWorkId
@@ -50,13 +72,18 @@ public interface ProcessRepository<T extends BaseProcess, R extends ProcessRepos
     """)
     Optional<T> findByDegreeWorkIdAndEvaluationStatus(Long pDegreeWorkId, EnumProcessStatus pEvaluationStatus);
 
-    // 7. Procesos donde NO hay evaluacion (evaluation null)
+    /**
+     * Finds processes that have no evaluator assigned.
+     *
+     * @param pDegreeWorkId the degree work identifier
+     * @return an optional process
+     */
     @Query("""
         SELECT p FROM #{#entityName} p
         WHERE p.core.degreeWorkId = :pDegreeWorkId
           AND p.evaluation IS NULL
     """)
     Optional<T> findUnassignedBy(Long pDegreeWorkId);
-
 }
+
 
