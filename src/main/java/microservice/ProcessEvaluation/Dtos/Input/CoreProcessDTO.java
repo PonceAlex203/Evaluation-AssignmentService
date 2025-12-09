@@ -16,7 +16,7 @@ public abstract class CoreProcessDTO {
         return degreeWorkId;
     }
 
-    private void setDegreeWorkId(Long degreeWorkId) {
+    public void setDegreeWorkId(Long degreeWorkId) {
         this.degreeWorkId = degreeWorkId;
     }
 }
