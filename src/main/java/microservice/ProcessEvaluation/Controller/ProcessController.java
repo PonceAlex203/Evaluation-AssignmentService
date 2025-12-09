@@ -10,6 +10,7 @@ import microservice.ProcessEvaluation.Entities.Process.Draft;
 import microservice.ProcessEvaluation.Entities.Process.FormatA;
 import microservice.ProcessEvaluation.Enums.EnumProcessStatus;
 import microservice.ProcessEvaluation.Services.ProcessFacade;
+import microservice.SecurityComponent.config.JwtRequestFilter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -93,7 +94,7 @@ public class ProcessController {
      */
     @PutMapping("/formatA/evaluate/approve")
     public ResponseEntity<FormatAResponseDTO> approveFormatA(@RequestBody EvaluationDTO request) {
-        FormatAResponseDTO vEvaluatedFormatA = processFacade.evaluateFormatA(1L, request,EnumProcessStatus.APPROVED);
+        FormatAResponseDTO vEvaluatedFormatA = processFacade.evaluateFormatA(JwtRequestFilter.getCurrentAccountId(), request,EnumProcessStatus.APPROVED);
         return ResponseEntity.ok(vEvaluatedFormatA);                        //Enviar id del Jwt
     }
 
@@ -104,7 +105,7 @@ public class ProcessController {
      */
     @PutMapping("/formatA/evaluate/reject")
     public ResponseEntity<FormatAResponseDTO> rejectFormatA(@RequestBody EvaluationDTO request) {
-        FormatAResponseDTO vEvaluatedFormatA = processFacade.evaluateFormatA(1L, request,EnumProcessStatus.REJECTED);
+        FormatAResponseDTO vEvaluatedFormatA = processFacade.evaluateFormatA(JwtRequestFilter.getCurrentAccountId(), request,EnumProcessStatus.REJECTED);
         return ResponseEntity.ok(vEvaluatedFormatA);                        //Enviar id del Jwt
     }
 
@@ -128,6 +129,7 @@ public class ProcessController {
         return ResponseEntity.ok(processFacade.getAllDrafts());
     }
 
+
     /**
      * Creates a new draft document
      * @param pDraft the draft data
@@ -146,7 +148,7 @@ public class ProcessController {
      */
     @PutMapping("/draft/evaluate/approve")
     public ResponseEntity<DraftResponseDTO> approveDraft(@RequestBody EvaluationDTO request) {
-        DraftResponseDTO vEvaluatedDraft = processFacade.evaluateDraft(1L,request, EnumProcessStatus.APPROVED);
+        DraftResponseDTO vEvaluatedDraft = processFacade.evaluateDraft(JwtRequestFilter.getCurrentAccountId(),request, EnumProcessStatus.APPROVED);
         return ResponseEntity.ok(vEvaluatedDraft);                      //Enviar id del Jwt
     }
 
@@ -155,10 +157,10 @@ public class ProcessController {
      * @param request the evaluation data
      * @return rejected draft response
      */
-    @PutMapping("/draft/evaluate/reject/")
+    @PutMapping("/draft/evaluate/reject")
     public ResponseEntity<DraftResponseDTO> rejectDraft(@RequestBody EvaluationDTO request) {
-        DraftResponseDTO vEvaluatedDraft = processFacade.evaluateDraft(1L,request, EnumProcessStatus.REJECTED);
-        return ResponseEntity.ok(vEvaluatedDraft);                     //Enviar id del Jwt
+        DraftResponseDTO vEvaluatedDraft = processFacade.evaluateDraft(JwtRequestFilter.getCurrentAccountId(),request, EnumProcessStatus.REJECTED);
+        return ResponseEntity.ok(vEvaluatedDraft);
     }
 
     /**
@@ -178,7 +180,7 @@ public class ProcessController {
      * @return updated draft response
      */
     @PutMapping("/draft/Assignments")
-    public ResponseEntity<DraftResponseDTO> assignmentEvaluators( @RequestBody DoubleAssignmentDTO request){
+    public ResponseEntity<DraftResponseDTO> assignmentEvaluators(@RequestBody DoubleAssignmentDTO request){
         DraftResponseDTO vDraft = processFacade.assignmentDraftEvaluators(request);
         return ResponseEntity.ok(vDraft);
     }
@@ -189,7 +191,7 @@ public class ProcessController {
      */
     @GetMapping("/draft/evaluate/pending")
     public ResponseEntity<List<DraftResponseDTO>> getPendingEvaluateDraftsByEvluatorId() {
-        List<DraftResponseDTO> vListPending = processFacade.getPendingEvaluateDrafts(1L);//Enviar id del Jwt
+        List<DraftResponseDTO> vListPending = processFacade.getPendingEvaluateDrafts(JwtRequestFilter.getCurrentAccountId());//Enviar id del Jwt
         return ResponseEntity.ok(vListPending);
     }
 
